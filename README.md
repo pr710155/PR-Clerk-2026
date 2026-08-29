@@ -1,79 +1,15 @@
-# PR Clerk 2026 — Calculation Practice
+# PR CLERK 2026 — V18 Moderate Integrated
 
-A private Progressive Web App (PWA) for fast calculation practice.
+Moderate now contains independent sections:
+- Simplification
+- Approximation
+- Quadratic Equations
+- Missing Number Series
+- Wrong Number Series
+- Blind Fold (mixed)
 
-## Main menu
+The generator uses fresh randomized pattern families, duplicate prevention and question-specific approach/trick/steps. Quadratic includes more than root-taking: comparison, non-monic/rearranged equations, ± square-root cases, known-root, equal-roots/discriminant and root-relation questions.
 
-- Easy — Calculation Foundation
-- Moderate — Speed Maths
-- Hard — Calculation Foundation
+Moderate options are displayed without A/B/C/D/E labels. The result page adds a performance snapshot plus the existing timing/AI-coach analysis.
 
-There is no Full Blind Test.
-
-## Easy
-
-Parent-style topic cards:
-- Tables — choose any table from 6–30
-- Squares — 1–60
-- Cubes — 1–30
-- Percentage Values — Percentage → Fraction and Fraction → Percentage
-- Fractions — basic fraction practice
-- Number Games — choose Addition, Subtraction, Multiplication, or Division
-- Mixed Set — surprise mix of all Easy topics
-
-Tables and Number Games use selection screens so the learner decides exactly what to practise.
-
-## Answer input and feedback
-
-Easy practice uses a numeric digital input pad with only:
-- 0–9
-- /
-- .
-
-There are no multiple-choice options for Easy topics.
-
-Answers are not revealed while the test is in progress. There is no instant red/wrong or correct feedback. Answers are revealed only after the test is submitted or time expires.
-
-## Results
-
-After submission, the result includes:
-- Marks / score
-- Correct, wrong and unanswered counts
-- Time used
-- Average time per attempted question
-- Time left
-- Time-management assessment
-- Question-by-question answer review
-- Your answer and correct answer
-- Time spent on each question
-
-Section and topic labels are not displayed in the result review.
-
-## PWA
-
-The app includes a manifest and service worker for installable/offline-capable use when hosted as a static site.
-
-## V9 Moderate AI Coach + compact review
-Moderate results now include:
-- detailed per-question solution and shortcut/approach guidance
-- question-by-question time analysis
-- personalised AI Coach + compact review-style time-management feedback
-- slowest-attempt highlights that jump to the relevant review item
-
-The coaching is computed locally from performance and timing data; no answer data is sent to a third-party AI service.
-
-## V10 Easy Number Games Shortcut Coach
-Easy Number Games now deliberately trains multiple mental-calculation patterns rather than only increasing number size. Addition, subtraction, multiplication and division questions carry a post-submission highlight, best approach, shortcut and quick-method library. The shortcut is never shown while the question is being attempted.
-
-## V13 — Examiner-Level Clerk Prelims Generator
-Moderate is focused on Clerk Prelims-style calculation patterns using recent pattern references from Guidely, Adda247 and Oliveboard. Quadratic Equations are removed from Moderate. Added Number Series (missing/wrong and common progression patterns) and Arithmetic calculation/application patterns alongside Simplification and Approximation. Questions remain original/generated, not copied from source material.
-
-
-### V13 design target
-Moderate is now generated to resemble the structure and calculation demand of SBI/IBPS Clerk Prelims Numerical Ability: Simplification, Approximation, Missing/Wrong Number Series, Arithmetic and Data Interpretation. Generator families are varied and controlled rather than simple arithmetic templates. DI includes table, bar-style and caselet-style calculations. No Quadratic Equations are used in Moderate.
-
-The generator creates original questions; it does not copy source questions. Pattern references were checked against recent Clerk Prelims analyses and preparation material from Guidely, Adda247, Oliveboard and other exam-analysis sources.
-
-
-## Moderate scope update
-Moderate currently contains ONLY Simplification, Approximation, and Number Series (Missing + Wrong). DI and Arithmetic have been removed for now.
+This bundle does not add DI or Arithmetic to Moderate.
