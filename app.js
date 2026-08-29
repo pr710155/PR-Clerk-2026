@@ -14,7 +14,7 @@ const levels=[
 {id:2,name:"Moderate",desc:"Speed Maths",topics:[
 {id:"simplification",name:"Simplification",desc:"Clerk Prelims exam-style calculation"},
 {id:"approximation",name:"Approximation",desc:"Fast rounding and option-based calculation"},
-{id:"series",name:"Number Series",desc:"Missing & wrong number patterns"},
+{id:"series",name:"Number Series",desc:"Missing & wrong number patterns"}]},
 {id:3,name:"Hard",desc:"Calculation Foundation",topics:[
 {id:"hardquad",name:"Mains-Level Quadratic",desc:"Advanced quadratic practice"}]}
 ];
