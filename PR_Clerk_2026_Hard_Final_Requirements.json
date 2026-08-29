@@ -1,0 +1,132 @@
+{
+  "project": "PR Clerk 2026",
+  "section": "Hard",
+  "version": "final_requirements",
+  "authoritative_requirements": {
+    "interaction_model": {
+      "all_hard_subsections_are_mcq": true,
+      "touch_tap_selectable": true,
+      "options_per_question": 5,
+      "visible_option_labels": false,
+      "labels": [],
+      "typed_answer_box": false,
+      "numeric_keypad": false,
+      "apple_pencil": false,
+      "stylus": false,
+      "handwriting": false,
+      "scribble": false,
+      "canvas_input": false
+    },
+    "subsections": [
+      {
+        "id": "advanced_quadratic",
+        "name": "Advanced Quadratic Equations",
+        "question_type": "MCQ",
+        "answer_method": "tap_one_of_five_options",
+        "difficulty": "advanced banking prelims/mains-style practice",
+        "requirements": [
+          "Do not restrict questions to root comparison.",
+          "Use alpha+beta and alpha*beta relationships.",
+          "Use alpha^2+beta^2.",
+          "Use alpha^3+beta^3.",
+          "Use reciprocal-root relationships.",
+          "Use reciprocal-square relationships.",
+          "Use (alpha-beta)^2.",
+          "Use squares, cubes and roots where appropriate.",
+          "Use conditions involving roots and coefficients.",
+          "Use multi-step root-property questions.",
+          "Avoid repetitive basic factorisation/root-taking drills."
+        ]
+      },
+      {
+        "id": "advanced_missing_number",
+        "name": "Advanced Missing Number Series",
+        "question_type": "MCQ",
+        "answer_method": "tap_one_of_five_options",
+        "requirements": [
+          "Advanced exam-level patterns.",
+          "Mixed operations.",
+          "Changing multiplication and addition/subtraction.",
+          "Square and cube based patterns.",
+          "Alternating operations.",
+          "Interleaved sequences.",
+          "Operation plus adjustment patterns.",
+          "Non-obvious difference patterns.",
+          "Multi-layer patterns.",
+          "Five plausible options with exactly one correct answer."
+        ]
+      },
+      {
+        "id": "advanced_wrong_number",
+        "name": "Advanced Wrong Number Series",
+        "question_type": "MCQ",
+        "answer_method": "tap_one_of_five_options",
+        "requirements": [
+          "Advanced wrong-number-series patterns.",
+          "Identify the wrong term.",
+          "Determine corrected term where applicable.",
+          "Support Q110-style P/Q relationship questions.",
+          "Five plausible options with exactly one correct answer.",
+          "Keep generator extensible for additional wrong-number types supplied later."
+        ]
+      }
+    ],
+    "renderer_contract": {
+      "hard_question_object": {
+        "expr": "question text",
+        "ans": "correct answer",
+        "exp": "explanation",
+        "skill": "subsection skill",
+        "diff": "Hard",
+        "options": [
+          "option 1",
+          "option 2",
+          "option 3",
+          "option 4",
+          "option 5"
+        ],
+        "coach": {
+          "highlight": "short solution highlight",
+          "approach": "exam approach",
+          "shortcut": "quick method",
+          "steps": [
+            "concise step 1",
+            "concise step 2"
+          ],
+          "quickMethods": [
+            "quick method 1",
+            "quick method 2"
+          ]
+        }
+      },
+      "options_rule": "Every Hard question must have exactly five options. The correct answer must be one of them.",
+      "render_rule": "When options contains five choices, render five unlabeled tappable MCQ cards."
+    },
+    "global_input_rule": {
+      "easy": "No stylus/pencil/handwriting. Existing normal interaction remains.",
+      "moderate": "No stylus/pencil/handwriting. Existing normal interaction remains.",
+      "hard": "No stylus/pencil/handwriting. All three subsections are MCQ."
+    },
+    "preservation": [
+      "Do not break Easy.",
+      "Do not change Moderate question content or logic.",
+      "Do not change existing analytics, timer, navigation, submission, review or result functionality unless required to fix Hard.",
+      "Do not reintroduce stylus or handwriting through any question-specific renderer."
+    ]
+  },
+  "critical_summary": [
+    "HARD = 100% MCQ.",
+    "Advanced Quadratic = MCQ.",
+    "Advanced Missing Number = MCQ.",
+    "Advanced Wrong Number = MCQ.",
+    "Every Hard question has five tappable options.",
+    "No A/B/C/D/E labels.",
+    "No typed-answer mode in Hard.",
+    "No Apple Pencil.",
+    "No stylus.",
+    "No handwriting.",
+    "No Scribble.",
+    "No canvas.",
+    "Keep Hard difficulty advanced and exam-oriented."
+  ]
+}
