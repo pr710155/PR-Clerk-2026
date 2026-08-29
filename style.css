@@ -121,7 +121,7 @@ header .muted{font-size:14px;font-weight:650;letter-spacing:.02em}
 @media(max-width:650px){.insight-kpis{grid-template-columns:repeat(2,1fr)}.insight-grid,.test-insight-grid{grid-template-columns:1fr}.test-pie .pie-wrap{justify-content:center}.topic-row{grid-template-columns:125px 1fr 38px}.insight-callouts{grid-template-columns:1fr 1fr 1fr}.insights-hero{padding:18px}.insights-hero h1{font-size:28px}.streak-badge{min-width:74px;height:74px}.pie{width:105px;height:105px}.pie:after{inset:24px}}
 @media(max-width:450px){.insight-kpis strong{font-size:19px}.insight-kpis span{font-size:9px}.insight-card,.test-insights{padding:15px}.daily-bars{gap:3px}.daily-bar-col small{font-size:7px}.insight-callouts{grid-template-columns:1fr}.topic-row{grid-template-columns:105px 1fr 35px}.pie-wrap{gap:10px}.pie{width:96px;height:96px}.pie:after{inset:22px}}
 
-/* V24 — simple typing/keypad answer field; no custom stylus feature */
+/* Simple typing/keypad answer field */
 .answer-input-wrap{max-width:420px;margin:18px auto 12px}
 .answer-input-label{display:block;text-align:left;margin:0 0 7px 3px;font-size:11px;font-weight:850;color:#68738a;text-transform:uppercase;letter-spacing:.05em}
 .answer-input{width:100%;min-height:66px;border:2px solid #ccd4e5;border-radius:15px;background:#fbfcff;color:var(--ink);font-size:28px;font-weight:800;text-align:right;padding:13px 16px;box-sizing:border-box;outline:none;caret-color:#5268d9;touch-action:manipulation;-webkit-user-select:text;user-select:text}

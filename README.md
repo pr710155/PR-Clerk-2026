@@ -79,7 +79,7 @@ The generator creates original questions; it does not copy source questions. Pat
 Moderate currently contains ONLY Simplification, Approximation, and Number Series (Missing + Wrong). DI and Arithmetic have been removed for now.
 
 
-V24 CHANGE: Removed the app's stylus/Apple Pencil/Scribble feature and related UI. Answers use normal typing/keypad input; quadratic remains comparison-options based.
+V24 CHANGE: Removed the app's stylus/Apple Pencil/Scribble feature and related UI. Answers use normal typing/keypad input; series use typed answers and quadratic comparison uses MCQ options.
 
 
 ## V27 Hard Advanced
