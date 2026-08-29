@@ -64,3 +64,16 @@ The coaching is computed locally from performance and timing data; no answer dat
 
 ## V10 Easy Number Games Shortcut Coach
 Easy Number Games now deliberately trains multiple mental-calculation patterns rather than only increasing number size. Addition, subtraction, multiplication and division questions carry a post-submission highlight, best approach, shortcut and quick-method library. The shortcut is never shown while the question is being attempted.
+
+## V13 — Examiner-Level Clerk Prelims Generator
+Moderate is focused on Clerk Prelims-style calculation patterns using recent pattern references from Guidely, Adda247 and Oliveboard. Quadratic Equations are removed from Moderate. Added Number Series (missing/wrong and common progression patterns) and Arithmetic calculation/application patterns alongside Simplification and Approximation. Questions remain original/generated, not copied from source material.
+
+
+### V13 design target
+Moderate is now generated to resemble the structure and calculation demand of SBI/IBPS Clerk Prelims Numerical Ability: Simplification, Approximation, Missing/Wrong Number Series, Arithmetic and Data Interpretation. Generator families are varied and controlled rather than simple arithmetic templates. DI includes table, bar-style and caselet-style calculations. No Quadratic Equations are used in Moderate.
+
+The generator creates original questions; it does not copy source questions. Pattern references were checked against recent Clerk Prelims analyses and preparation material from Guidely, Adda247, Oliveboard and other exam-analysis sources.
+
+
+## Moderate scope update
+Moderate currently contains ONLY Simplification, Approximation, and Number Series (Missing + Wrong). DI and Arithmetic have been removed for now.
