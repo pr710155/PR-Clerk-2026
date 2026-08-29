@@ -1804,31 +1804,32 @@ function advancedQuadratic(){
     [`S = ${S}, P = ${P0}.`,`S² − P = ${S}² − ${P0} = ${ans}.`]);
 }
 
-function hardSeriesMCQOptions(ans){
+// ============================================================
+// HARD → ADVANCED MISSING NUMBER SERIES
+// ============================================================
+function hardNumericMCQOptions(ans){
   const n=Number(ans);
-  const candidates=[n,n+2,n-2,n+5,n-5,n+10,n-10];
+  const vals=[n,n+2,n-2,n+5,n-5,n+10,n-10,n+15,n-15];
   const out=[];
-  for(const v of candidates){
+  for(const v of vals){
     if(Number.isFinite(v) && !out.includes(String(v))) out.push(String(v));
     if(out.length===5) break;
   }
   return sh(out);
 }
+
 function hardRelationMCQOptions(ans){
-  const base=["P > Q","P ≥ Q","P = Q","P < Q","P ≤ Q","P = √Q","P = 2Q","P = Q/2","P = √Q + 16","P = √Q − 16"];
+  const base=["P > Q","P ≥ Q","P = Q","P < Q","P ≤ Q","P = √Q","P = 2Q","P = Q/2"];
   const out=[String(ans)];
   for(const v of base) if(!out.includes(v)) out.push(v);
   return sh(out.slice(0,5));
 }
 
-// ============================================================
-// HARD → ADVANCED MISSING NUMBER SERIES
-// ============================================================
 function advancedMissingSeries(){
   const type=R(1,6);
   const clean=(arr)=>arr.map(v=>Number.isInteger(v)?String(v):String(Number(v.toFixed(2))));
   const out=(series,answer,approach,shortcut,steps,highlight)=>{
-    return q(`Find the missing term: ${clean(series).join(", ")}`,answer,"","Missing Number Series","Hard",hardSeriesMCQOptions(answer));
+    return q(`Find the missing term: ${clean(series).join(", ")}`,answer,"","Missing Number Series","Hard",null);
   };
 
   if(type===1){
@@ -1839,7 +1840,7 @@ function advancedMissingSeries(){
     const z=[a];
     for(let i=1;i<7;i++) z.push(i%2===1?z[i-1]*2:z[i-1]+add+i);
     const idx=R(2,5),ans=z[idx],shown=z.slice();shown[idx]="?";
-    return {expr:`Find the missing term: ${shown.join(", ")}`,ans:String(ans),exp:"","skill":"Missing Number Series","diff":"Hard",coach:{highlight:"The operations alternate; don't force one rule across the whole series.",approach:"Separate odd and even transitions, then continue each operation.",shortcut:"Check alternating multiplication/addition before using differences.",steps:[`Odd transitions use ×2.`,`Even transitions add ${add}+step number.`,`The missing term is ${ans}.`],quickMethods:["Split alternating operations.","Verify the rule on both sides of the gap."]}};
+    return {expr:`Find the missing term: ${shown.join(", ")}`,ans:String(ans),exp:"","skill":"Missing Number Series","diff":"Hard",options:hardNumericMCQOptions(ans),coach:{highlight:"The operations alternate; don't force one rule across the whole series.",approach:"Separate odd and even transitions, then continue each operation.",shortcut:"Check alternating multiplication/addition before using differences.",steps:[`Odd transitions use ×2.`,`Even transitions add ${add}+step number.`,`The missing term is ${ans}.`],quickMethods:["Split alternating operations.","Verify the rule on both sides of the gap."]}};
   }
 
   if(type===2){
@@ -1847,7 +1848,7 @@ function advancedMissingSeries(){
     const k=R(1,3),start=R(10,40),z=[start];
     for(let i=1;i<7;i++) z.push(z[i-1]+k*i*i);
     const idx=R(2,5),ans=z[idx],shown=z.slice();shown[idx]="?";
-    return {expr:`Find the missing term: ${shown.join(", ")}`,ans:String(ans),exp:"","skill":"Missing Number Series","diff":"Hard",coach:{highlight:`Successive differences follow ${k}×1², ${k}×2², ${k}×3²...`,approach:"Write the first differences and compare them with consecutive squares.",shortcut:"If differences grow quickly, test squares before second differences.",steps:[`Differences begin ${k}×1², ${k}×2², ${k}×3²...`,`The required difference at the gap gives ${ans}.`],quickMethods:["Check first differences.","Compare differences with square numbers."]}};
+    return {expr:`Find the missing term: ${shown.join(", ")}`,ans:String(ans),exp:"","skill":"Missing Number Series","diff":"Hard",options:hardNumericMCQOptions(ans),coach:{highlight:`Successive differences follow ${k}×1², ${k}×2², ${k}×3²...`,approach:"Write the first differences and compare them with consecutive squares.",shortcut:"If differences grow quickly, test squares before second differences.",steps:[`Differences begin ${k}×1², ${k}×2², ${k}×3²...`,`The required difference at the gap gives ${ans}.`],quickMethods:["Check first differences.","Compare differences with square numbers."]}};
   }
 
   if(type===3){
@@ -1855,7 +1856,7 @@ function advancedMissingSeries(){
     const start=R(8,20),n=R(1,5),z=[start];
     for(let i=1;i<7;i++) z.push(z[i-1]*(i+1)-n);
     const idx=R(2,5),ans=z[idx],shown=z.slice();shown[idx]="?";
-    return {expr:`Find the missing term: ${shown.join(", ")}`,ans:String(ans),exp:"","skill":"Missing Number Series","diff":"Hard",coach:{highlight:"The multiplier increases by 1 while the subtraction stays fixed.",approach:"Inspect the multiplier from one transition to the next.",shortcut:"Try ×2−n, ×3−n, ×4−n... when terms rise sharply.",steps:[`Multipliers are ×2, ×3, ×4...`,`Subtract ${n} after each multiplication.`,`Missing term = ${ans}.`],quickMethods:["Check changing multipliers.","Keep the adjustment constant."]}};
+    return {expr:`Find the missing term: ${shown.join(", ")}`,ans:String(ans),exp:"","skill":"Missing Number Series","diff":"Hard",options:hardNumericMCQOptions(ans),coach:{highlight:"The multiplier increases by 1 while the subtraction stays fixed.",approach:"Inspect the multiplier from one transition to the next.",shortcut:"Try ×2−n, ×3−n, ×4−n... when terms rise sharply.",steps:[`Multipliers are ×2, ×3, ×4...`,`Subtract ${n} after each multiplication.`,`Missing term = ${ans}.`],quickMethods:["Check changing multipliers.","Keep the adjustment constant."]}};
   }
 
   if(type===4){
@@ -1863,7 +1864,7 @@ function advancedMissingSeries(){
     const start=R(5,20),z=[start];
     for(let i=1;i<7;i++) z.push(z[i-1]+(i%2?i*i:i*i*i));
     const idx=R(2,5),ans=z[idx],shown=z.slice();shown[idx]="?";
-    return {expr:`Find the missing term: ${shown.join(", ")}`,ans:String(ans),exp:"","skill":"Missing Number Series","diff":"Hard",coach:{highlight:"The increments alternate between a square and a cube.",approach:"Take differences and classify each increment as n² or n³.",shortcut:"When differences jump irregularly, test alternating square/cube additions.",steps:[`Differences alternate: 1², 2³, 3², 4³...`,`Continue the alternating rule to get ${ans}.`],quickMethods:["Check differences first.","Test square/cube alternation."]}};
+    return {expr:`Find the missing term: ${shown.join(", ")}`,ans:String(ans),exp:"","skill":"Missing Number Series","diff":"Hard",options:hardNumericMCQOptions(ans),coach:{highlight:"The increments alternate between a square and a cube.",approach:"Take differences and classify each increment as n² or n³.",shortcut:"When differences jump irregularly, test alternating square/cube additions.",steps:[`Differences alternate: 1², 2³, 3², 4³...`,`Continue the alternating rule to get ${ans}.`],quickMethods:["Check differences first.","Test square/cube alternation."]}};
   }
 
   if(type===5){
@@ -1874,14 +1875,14 @@ function advancedMissingSeries(){
       else {const n=(i-1)/2;z.push(z[i-2]+n*5+5);}
     }
     const idx=R(2,5),ans=z[idx],shown=z.slice();shown[idx]="?";
-    return {expr:`Find the missing term: ${shown.join(", ")}`,ans:String(ans),exp:"","skill":"Missing Number Series","diff":"Hard",coach:{highlight:"There are two interleaved sequences hidden in the single row.",approach:"Separate odd-position and even-position terms, then continue each sequence.",shortcut:"If consecutive differences look messy, split odd and even positions.",steps:[`Odd-position terms follow one progression.`,`Even-position terms follow another progression.`,`The missing term is ${ans}.`],quickMethods:["Split odd/even positions.","Solve each mini-series separately."]}};
+    return {expr:`Find the missing term: ${shown.join(", ")}`,ans:String(ans),exp:"","skill":"Missing Number Series","diff":"Hard",options:hardNumericMCQOptions(ans),coach:{highlight:"There are two interleaved sequences hidden in the single row.",approach:"Separate odd-position and even-position terms, then continue each sequence.",shortcut:"If consecutive differences look messy, split odd and even positions.",steps:[`Odd-position terms follow one progression.`,`Even-position terms follow another progression.`,`The missing term is ${ans}.`],quickMethods:["Split odd/even positions.","Solve each mini-series separately."]}};
   }
 
   // Product/sum transformation: ×n + n².
   const start=R(4,10),z=[start];
   for(let i=1;i<7;i++) z.push(z[i-1]*(i+1)+(i+1)*(i+1));
   const idx=R(2,5),ans=z[idx],shown=z.slice();shown[idx]="?";
-  return {expr:`Find the missing term: ${shown.join(", ")}`,ans:String(ans),exp:"","skill":"Missing Number Series","diff":"Hard",coach:{highlight:"Each step combines a changing multiplier with the square of that multiplier.",approach:"Look for ×n followed by +n² rather than only differences.",shortcut:"For rapidly growing terms, test ×n ± n² patterns.",steps:[`Step multipliers increase: ×2, ×3, ×4...`,`The adjustment is the square of the multiplier.`,`Missing term = ${ans}.`],quickMethods:["Check ×n with a linked adjustment.","Use the operation sequence, not raw differences."]}};
+  return {expr:`Find the missing term: ${shown.join(", ")}`,ans:String(ans),exp:"","skill":"Missing Number Series","diff":"Hard",options:hardNumericMCQOptions(ans),coach:{highlight:"Each step combines a changing multiplier with the square of that multiplier.",approach:"Look for ×n followed by +n² rather than only differences.",shortcut:"For rapidly growing terms, test ×n ± n² patterns.",steps:[`Step multipliers increase: ×2, ×3, ×4...`,`The adjustment is the square of the multiplier.`,`Missing term = ${ans}.`],quickMethods:["Check ×n with a linked adjustment.","Use the operation sequence, not raw differences."]}};
 }
 
 // ============================================================
@@ -1906,7 +1907,7 @@ function advancedWrongSeries(){
     const shown=clean.slice(0,7);shown[wrongIndex]=Pval;
     const answer="P = √Q";
     const options=[answer,"P = √Q + 16","P = 2√Q","P = Q/2","P = √Q − 16"];
-    return {expr:`A series is given with one wrong term. ${shown.join(", ")}, Q. If P is the wrong displayed term and Q is the next term of the corrected series, find the relation between P and Q.`,ans:answer,exp:"","skill":"Wrong Number Series","diff":"Hard",coach:{highlight:"The multipliers form ÷4, ÷2, ×1, ×2, ×4, ×8, ×16.",approach:"First identify the changing multiplier. Correct the broken term, then continue the clean sequence to Q.",shortcut:"Think in powers of 2: the multiplier doubles at every step after ÷4, ÷2, ×1.",steps:[`The multiplier pattern is ÷4, ÷2, ×1, ×2, ×4, ×8, ×16.`,`The displayed wrong term P = ${Pval}; the correct term there is ${correct}.`,`Continue the corrected pattern: Q = ${Q}.`,`√Q = √${Q} = ${root} = P.`,`Therefore P = √Q.`],quickMethods:["Find the operation pattern first.","Correct the term before finding Q.","Only then compare P and Q."]}};
+    return {expr:`A series is given with one wrong term. ${shown.join(", ")}, Q. If P is the wrong displayed term and Q is the next term of the corrected series, find the relation between P and Q.`,ans:answer,exp:"","skill":"Wrong Number Series","diff":"Hard",options:hardRelationMCQOptions(answer),coach:{highlight:"The multipliers form ÷4, ÷2, ×1, ×2, ×4, ×8, ×16.",approach:"First identify the changing multiplier. Correct the broken term, then continue the clean sequence to Q.",shortcut:"Think in powers of 2: the multiplier doubles at every step after ÷4, ÷2, ×1.",steps:[`The multiplier pattern is ÷4, ÷2, ×1, ×2, ×4, ×8, ×16.`,`The displayed wrong term P = ${Pval}; the correct term there is ${correct}.`,`Continue the corrected pattern: Q = ${Q}.`,`√Q = √${Q} = ${root} = P.`,`Therefore P = √Q.`],quickMethods:["Find the operation pattern first.","Correct the term before finding Q.","Only then compare P and Q."]}};
   }
 
   if(type===2){
@@ -1918,7 +1919,7 @@ function advancedWrongSeries(){
     const shown=clean.slice(0,7);shown[wrongIndex]=Pval;
     const answer=Pval>Q?"P > Q":"P < Q";
     const options=["P > Q","P ≥ Q","P = Q","P < Q","P ≤ Q"];
-    return {expr:`A series is given with one wrong term. ${shown.join(", ")}. If P is the wrong term and Q is the final term of the corrected series, compare P and Q.`,ans:answer,exp:"","skill":"Wrong Number Series","diff":"Hard",coach:{highlight:`The differences follow ${k}×1², ${k}×2², ${k}×3²...`,approach:"Use first differences to identify the broken term, then compare the displayed wrong term with the corrected final term.",shortcut:"For square-difference series, compare the wrong value with the corrected continuation instead of rebuilding everything.",steps:[`Expected difference pattern: ${k}×1², ${k}×2², ${k}×3²...`,`Wrong displayed term P = ${Pval}; correct value = ${correct}.`,`Corrected final term Q = ${Q}.`,`Therefore ${answer}.`],quickMethods:["Check square differences.","Separate wrong value from corrected value."]}};
+    return {expr:`A series is given with one wrong term. ${shown.join(", ")}. If P is the wrong term and Q is the final term of the corrected series, compare P and Q.`,ans:answer,exp:"","skill":"Wrong Number Series","diff":"Hard",options:hardRelationMCQOptions(answer),coach:{highlight:`The differences follow ${k}×1², ${k}×2², ${k}×3²...`,approach:"Use first differences to identify the broken term, then compare the displayed wrong term with the corrected final term.",shortcut:"For square-difference series, compare the wrong value with the corrected continuation instead of rebuilding everything.",steps:[`Expected difference pattern: ${k}×1², ${k}×2², ${k}×3²...`,`Wrong displayed term P = ${Pval}; correct value = ${correct}.`,`Corrected final term Q = ${Q}.`,`Therefore ${answer}.`],quickMethods:["Check square differences.","Separate wrong value from corrected value."]}};
   }
 
   if(type===3){
@@ -1930,7 +1931,7 @@ function advancedWrongSeries(){
     const shown=clean.slice(0,7);shown[wrongIndex]=Pval;
     const answer=Pval===2*Q?"P = 2Q":Pval<Q?"P < Q":"P > Q";
     const options=answer==="P = 2Q"?["P = 2Q","P = Q","P = Q/2","P > Q","P < Q"]:["P > Q","P = Q","P < Q","P = 2Q","P = Q/2"];
-    return {expr:`A series is given with one wrong term. ${shown.join(", ")}. If P is the wrong term and Q is the final corrected term, find the relation between P and Q.`,ans:answer,exp:"","skill":"Wrong Number Series","diff":"Hard",coach:{highlight:"The clean sequence uses ×2, ×3, ×4, ×5...",approach:"Read the changing multiplier, locate the term that violates it, then compare P with Q.",shortcut:"When numbers grow fast, inspect multipliers before differences.",steps:[`Expected multipliers: ×2, ×3, ×4, ×5...`,`P = ${Pval}; corrected value = ${correct}.`,`Q = ${Q}.`,`Therefore ${answer}.`],quickMethods:["Check changing multipliers.","Correct before comparing."]}};
+    return {expr:`A series is given with one wrong term. ${shown.join(", ")}. If P is the wrong term and Q is the final corrected term, find the relation between P and Q.`,ans:answer,exp:"","skill":"Wrong Number Series","diff":"Hard",options:hardRelationMCQOptions(answer),coach:{highlight:"The clean sequence uses ×2, ×3, ×4, ×5...",approach:"Read the changing multiplier, locate the term that violates it, then compare P with Q.",shortcut:"When numbers grow fast, inspect multipliers before differences.",steps:[`Expected multipliers: ×2, ×3, ×4, ×5...`,`P = ${Pval}; corrected value = ${correct}.`,`Q = ${Q}.`,`Therefore ${answer}.`],quickMethods:["Check changing multipliers.","Correct before comparing."]}};
   }
 
   // Alternating ×2 and +n; final relation is numeric comparison.
@@ -1940,7 +1941,7 @@ function advancedWrongSeries(){
   const shown=clean.slice(0,7);shown[wrongIndex]=Pval;
   const answer=Pval>Q?"P > Q":Pval<Q?"P < Q":"P = Q";
   const options=["P > Q","P ≥ Q","P = Q","P < Q","P ≤ Q"];
-  return {expr:`A series is given with one wrong term. ${shown.join(", ")}. If P is the wrong term and Q is the final corrected term, compare P and Q.`,ans:answer,exp:"","skill":"Wrong Number Series","diff":"Hard",coach:{highlight:"The sequence alternates between multiplication and addition.",approach:"Separate the alternating operations, correct P, then compare it with Q.",shortcut:"Split odd and even transitions instead of forcing a single difference pattern.",steps:[`Odd transitions use ×2; even transitions add a growing adjustment.`,`P = ${Pval}; correct value = ${correct}.`,`Q = ${Q}.`,`Therefore ${answer}.`],quickMethods:["Split alternating operations.","Correct P before comparing with Q."]}};
+  return {expr:`A series is given with one wrong term. ${shown.join(", ")}. If P is the wrong term and Q is the final corrected term, compare P and Q.`,ans:answer,exp:"","skill":"Wrong Number Series","diff":"Hard",options:hardRelationMCQOptions(answer),coach:{highlight:"The sequence alternates between multiplication and addition.",approach:"Separate the alternating operations, correct P, then compare it with Q.",shortcut:"Split odd and even transitions instead of forcing a single difference pattern.",steps:[`Odd transitions use ×2; even transitions add a growing adjustment.`,`P = ${Pval}; correct value = ${correct}.`,`Q = ${Q}.`,`Therefore ${answer}.`],quickMethods:["Split alternating operations.","Correct P before comparing with Q."]}};
 }
 
 function moderateBlindfold() {
