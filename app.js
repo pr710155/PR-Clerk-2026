@@ -1,60 +1,79 @@
 const $=s=>document.querySelector(s);
-const screen=$("#screen"), back=$("#back"), subtitle=$("#subtitle");
-let state={view:"home",level:null,topic:null,questions:[],i:0,score:0,answered:false};
+const screen=$("#screen"),back=$("#back"),subtitle=$("#subtitle");
+let S={view:"home",level:null,topic:null,qs:[],i:0,answers:[],start:0,end:0,limit:0,timer:null};
 
 const levels=[
- {id:1,name:"Easy",desc:"Build instant calculation ability",topics:["Tables","Squares","Cubes","Percentage Values"]},
- {id:2,name:"Moderate",desc:"Main calculation-training level",topics:["Simplification","Approximation","Quadratic Equations"]},
- {id:3,name:"Hard",desc:"Mains-level quadratic practice",topics:["Mains-Level Quadratic"]}
+{id:1,name:"Easy",desc:"Calculation foundation",topics:[
+{id:"tables",name:"Tables",desc:"2–25"},
+{id:"squares",name:"Squares",desc:"1–60"},
+{id:"cubes",name:"Cubes",desc:"1–30"},
+{id:"percent",name:"Percentage Values",desc:"Percentage ↔ fraction"},
+{id:"fractions",name:"Fractions",desc:"Basic fraction practice"},
+{id:"number",name:"Number Games",desc:"Addition • Subtraction • Multiplication • Division"},
+{id:"mixed",name:"Mixed Set",desc:"Surprise mix of all Easy sections"}]},
+{id:2,name:"Moderate",desc:"Exam-style calculation",topics:[
+{id:"simplification",name:"Simplification",desc:"BODMAS and observation"},
+{id:"approximation",name:"Approximation",desc:"Fast approximation"},
+{id:"quadratic",name:"Quadratic Equations",desc:"Roots and comparison"}]},
+{id:3,name:"Hard",desc:"Mains-level practice",topics:[
+{id:"hardquad",name:"Mains-Level Quadratic",desc:"Advanced quadratic practice"}]}
 ];
 
-function save(){localStorage.setItem("prclerk-progress",JSON.stringify({attempts:(+localStorage.getItem("attempts")||0)+0}));}
-function home(){
- state.view="home"; back.classList.add("hidden"); subtitle.textContent="Calculation Practice";
- screen.innerHTML=`<section class="hero"><span class="pill">PRIVATE PRACTICE APP</span><h1>PR Clerk 2026</h1><p>Fast calculation training for Clerk-level exams.</p><div class="stats"><div class="stat"><b>${localStorage.getItem("attempts")||0}</b><span class="small">Questions answered</span></div><div class="stat"><b>${localStorage.getItem("best")||0}%</b><span class="small">Best accuracy</span></div></div></section>
- <div class="grid">${levels.map(l=>`<button class="card" onclick="level(${l.id})"><span class="pill">LEVEL ${l.id}</span><h2>${l.name}</h2><div class="topic">${l.desc}</div><div class="small">${l.topics.length} topic${l.topics.length>1?"s":""}</div></button>`).join("")}</div>`;
+const R=(a,b)=>Math.floor(Math.random()*(b-a+1))+a,P=a=>a[R(0,a.length-1)],G=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b)[a,b]=[b,a%b];return a},F=(n,d)=>{let g=G(n,d);return`${n/g}/${d/g}`},sh=a=>a.sort(()=>Math.random()-.5);
+function opts(ans,more=[]){let s=new Set([String(ans)]);more.forEach(x=>{if(x!==undefined)s.add(String(x))});let d=1;while(s.size<4){let n=Number(ans);s.add(Number.isFinite(n)?String(n+(d%2?-d:d)):String(d));d++}return sh([...s]).slice(0,4)}
+function pctOpts(a){let x=["6.25","10","12.5","15","16.67","20","25","30","33.33","37.5","40","45","50","60","62.5","66.67","70","75","80","87.5","90"];return sh([a,...x.filter(v=>v!==a)]).slice(0,4)}
+function fracOpts(a){let x=["1/2","1/3","1/4","1/5","1/6","1/8","1/10","3/4","2/3","3/5","4/5","5/8","7/8"];return sh([a,...x.filter(v=>v!==a)]).slice(0,4)}
+function q(expr,ans,exp,skill,diff="Easy"){return{expr,ans:String(ans),exp,skill,diff}}
+
+function table(){let a=R(2,25),b=R(2,20),x=a*b;return q(`${a} × ${b} = ?`,x,`${a} × ${b} = ${x}.`,"Tables")}
+function square(){let n=R(1,60),x=n*n;return q(`${n}² = ?`,x,`${n} × ${n} = ${x}.`,"Squares")}
+function cube(){let n=R(1,30),x=n*n*n;return q(`${n}³ = ?`,x,`${n} × ${n} × ${n} = ${x}.`,"Cubes")}
+function percent(){
+ let a=P([[1,2,"50"],[1,3,"33.33"],[1,4,"25"],[3,4,"75"],[1,5,"20"],[2,5,"40"],[3,5,"60"],[4,5,"80"],[1,6,"16.67"],[5,6,"83.33"],[1,8,"12.5"],[3,8,"37.5"],[5,8,"62.5"],[7,8,"87.5"],[1,10,"10"],[3,10,"30"],[7,10,"70"],[9,10,"90"],[1,16,"6.25"],[3,20,"15"],[7,20,"35"],[9,20,"45"],[17,20,"85"]]);
+ if(Math.random()<.5)return q(`${a[2]}% = ?`,F(a[0],a[1]),`${a[2]}% = ${F(a[0],a[1])}.`,"Percentage → Fraction");
+ return q(`${a[0]}/${a[1]} = ? %`,a[2],`${a[0]}/${a[1]} = ${a[2]}%.`,"Fraction → Percentage");
 }
-function level(id){
- state.view="level";state.level=levels.find(x=>x.id===id);back.classList.remove("hidden");subtitle.textContent=`Level ${id} • ${state.level.name}`;
- screen.innerHTML=`<div class="hero"><span class="pill">LEVEL ${id}</span><h1>${state.level.name}</h1><p>${state.level.desc}.</p></div><div class="grid">${state.level.topics.map(t=>`<button class="card" onclick="start('${t.replaceAll("'","\\'")}')"><h3>${t}</h3><div class="topic">${topicDesc(t)}</div><br><span class="pill">START PRACTICE →</span></button>`).join("")}</div>`;
+function fraction(){
+ let d=R(4,20),a=R(1,d-1),b=R(1,d-1);
+ if(Math.random()<.5){let x=G(a,d);return q(`${a}/${d}  ?  ${b}/${d}`,a>b?">":a<b?"<":"=",`Same denominator: compare ${a} and ${b}.`,"Fractions")}
+ let n=a*b,den=d*d,ans=F(n,den);return q(`${a}/${d} × ${b}/${d} = ?`,ans,`Multiply and simplify: ${ans}.`,"Fractions")
 }
-function topicDesc(t){
- const d={Tables:"Multiplication recall and speed.",Squares:"Square values and recognition.",Cubes:"Cube values and recognition.","Percentage Values":"Common percentage ↔ fraction values.",Simplification:"BODMAS, fractions, decimals, roots, powers, divisibility and observation.",Approximation:"Fast option-based approximation and range elimination.","Quadratic Equations":"Clerk-style equations, roots and comparison.","Mains-Level Quadratic":"Harder manipulation, comparison and traps."};return d[t]||"Practice set.";
+function add(){let t=R(1,7),a,b,label;if(t===1){a=R(1,9);b=R(1,9);label="1 digit + 1 digit"}else if(t===2){a=R(1,9);b=R(10,99);label="1 digit + 2 digit"}else if(t===3){a=R(10,99);b=R(10,99);label="2 digit + 2 digit"}else if(t===4){a=R(10,99);b=R(100,999);label="2 digit + 3 digit"}else if(t===5){a=R(100,999);b=R(100,999);label="3 digit + 3 digit"}else if(t===6){a=R(100,999);b=R(1000,9999);label="3 digit + 4 digit"}else{a=R(1000,9999);b=R(1000,9999);label="4 digit + 4 digit"}let x=a+b;return q(`${a} + ${b} = ?`,x,`${a} + ${b} = ${x}.`,`Addition • ${label}`)}
+function sub(){let t=R(1,7),a,b,label;if(t===1){a=R(2,9);b=R(1,a-1);label="1 digit − 1 digit"}else if(t===2){a=R(10,99);b=R(1,9);label="2 digit − 1 digit"}else if(t===3){a=R(10,99);b=R(10,a-1);label="2 digit − 2 digit"}else if(t===4){a=R(100,999);b=R(10,99);label="3 digit − 2 digit"}else if(t===5){a=R(100,999);b=R(100,a-1);label="3 digit − 3 digit"}else if(t===6){a=R(1000,9999);b=R(100,999);label="4 digit − 3 digit"}else{a=R(1000,9999);b=R(1000,a-1);label="4 digit − 4 digit"}let x=a-b;return q(`${a} − ${b} = ?`,x,`${a} − ${b} = ${x}.`,`Subtraction • ${label}`)}
+function mul(){let t=R(1,5),a,b,label;if(t===1){a=R(2,99);b=R(2,9);label="2 digit × 1 digit"}else if(t===2){a=R(10,99);b=R(10,99);label="2 digit × 2 digit"}else if(t===3){a=R(100,999);b=R(2,9);label="3 digit × 1 digit"}else if(t===4){a=R(100,999);b=R(10,99);label="3 digit × 2 digit"}else{a=R(1000,9999);b=R(2,25);label="4 digit × 1/2 digit"}let x=a*b;return q(`${a} × ${b} = ?`,x,`${a} × ${b} = ${x}.`,`Multiplication • ${label}`)}
+function div(){let b=R(2,99),x=R(3,99),a=b*x;return q(`${a} ÷ ${b} = ?`,x,`${b} × ${x} = ${a}.`,"Division")}
+function number(){return P([add,sub,mul,div])()}
+function make(topic){
+ if(topic==="tables")return table();if(topic==="squares")return square();if(topic==="cubes")return cube();if(topic==="percent")return percent();if(topic==="fractions")return fraction();if(topic==="number")return number();
+ if(topic==="mixed")return make(P(["tables","squares","cubes","percent","fractions","number"]));
+ if(topic==="simplification"){let a=R(10,80),b=R(2,15),c=R(2,9),x=a+b*c;return q(`${a} + ${b} × ${c} = ?`,x,`Multiply first, then add: ${x}.`,"Simplification","Moderate")}
+ if(topic==="approximation"){let a=R(100,999),b=R(10,99),c=R(2,9),x=Math.round(a/b)*c;return q(`${a} ÷ ${b} × ${c} ≈ ?`,x,"Round to convenient values before calculating.","Approximation","Moderate")}
+ if(topic==="quadratic"){let a=R(2,20),b=R(2,20),x=Math.min(a,b);return q(`x² − ${a+b}x + ${a*b} = 0; smaller root?`,x,`The roots are ${a} and ${b}.`,"Quadratic Equations","Moderate")}
+ let a=R(4,25),b=R(4,25),x=Math.max(a,b);return q(`x² − ${a+b}x + ${a*b} = 0; larger root?`,x,`The roots are ${a} and ${b}.`,"Mains-Level Quadratic","Hard")
 }
-function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a}
-function gcd(a,b){while(b){[a,b]=[b,a%b]}return Math.abs(a)}
-function frac(n,d){let g=gcd(n,d);return `${n/g}/${d/g}`}
-function makeQuestion(topic){
- let a,b,c,ans,exp,expr,opts;
- if(topic==="Tables"){a=rand(2,25);b=rand(2,20);ans=a*b;expr=`${a} × ${b}`;exp=`Multiply ${a} by ${b}.`}
- else if(topic==="Squares"){a=rand(11,40);ans=a*a;expr=`${a}²`;exp=`${a} × ${a} = ${ans}.`}
- else if(topic==="Cubes"){a=rand(2,15);ans=a*a*a;expr=`${a}³`;exp=`${a} × ${a} × ${a} = ${ans}.`}
- else if(topic==="Percentage Values"){let pairs=[[1,2,"50%"],[1,4,"25%"],[3,4,"75%"],[1,5,"20%"],[3,5,"60%"],[1,8,"12.5%"],[1,10,"10%"],[3,20,"15%"],[7,20,"35%"],[9,20,"45%"]];let p=pairs[rand(0,pairs.length-1)]; if(Math.random()<.5){expr=`${p[0]}/${p[1]} = ?`;ans=p[2];exp=`Recognise the fraction as a common percentage.`}else{expr=`${p[2]} = ?`;ans=frac(p[0],p[1]);exp=`Convert the percentage to its simplest fraction.`}}
- else if(topic==="Simplification"){a=rand(10,80);b=rand(2,15);c=rand(2,9);ans=a+b*c;expr=`${a} + ${b} × ${c}`;exp=`Apply multiplication first: ${b} × ${c} = ${b*c}; then add ${a}.`}
- else if(topic==="Approximation"){a=rand(100,999);b=rand(10,99);c=rand(2,9);ans=Math.round(a/b)*c;expr=`${a} ÷ ${b} × ${c} ≈ ?`;exp=`Round ${a} ÷ ${b} to a convenient value, then multiply by ${c}.`}
- else {a=rand(2,20);b=rand(2,20);ans=a;expr=`x² − ${a+b}x + ${a*b} = 0; smaller root?`;exp=`Factors are ${a} and ${b}; the smaller root is ${Math.min(a,b)}.`}
- let set=new Set([String(ans)]);while(set.size<4){let d=rand(-9,9);if(d) set.add(String(typeof ans==="number"?ans+d:ans))}
- opts=[...set].sort(()=>Math.random()-.5);return {expr,ans:String(ans),exp,opts};
-}
-function start(topic){
- state.view="quiz";state.topic=topic;state.questions=Array.from({length:10},()=>makeQuestion(topic));state.i=0;state.score=0;state.answered=false;back.classList.remove("hidden");subtitle.textContent=topic;renderQ();
-}
-function renderQ(){
- const q=state.questions[state.i];state.answered=false;
- screen.innerHTML=`<div class="topline"><span class="pill">QUESTION ${state.i+1}/10</span><b>Score: ${state.score}</b></div><div class="bar" style="margin:12px 0 18px"><i style="width:${state.i*10}%"></i></div><section class="question"><div class="small">${state.level.name} • ${state.topic}</div><div class="expr">${q.expr}</div><div class="answers">${q.opts.map((o,j)=>`<button class="answer" onclick="answer(${j})">${o}</button>`).join("")}</div><div id="feedback"></div></section>`;
-}
-function answer(j){
- if(state.answered)return;state.answered=true;
- const q=state.questions[state.i], buttons=[...document.querySelectorAll(".answer")];let correct=buttons.findIndex(b=>b.textContent===q.ans);
- buttons[correct]?.classList.add("correct");if(j!==correct)buttons[j]?.classList.add("wrong");else state.score++;
- buttons.forEach(b=>b.disabled=true);
- $("#feedback").innerHTML=`<div class="explain"><b>${j===correct?"Correct!":"Not quite."}</b><br>${q.exp}<br><br><span class="small">Answer: ${q.ans}</span></div><div class="row" style="margin-top:16px"><button class="primary" onclick="nextQ()">${state.i===9?"Finish":"Next Question"}</button></div>`;
-}
-function nextQ(){if(state.i===9){finish();return}state.i++;renderQ()}
-function finish(){
- let pct=state.score*10, old=+localStorage.getItem("best")||0;localStorage.setItem("best",Math.max(old,pct));localStorage.setItem("attempts",(+localStorage.getItem("attempts")||0)+10);
- screen.innerHTML=`<section class="hero" style="text-align:center"><span class="pill">SET COMPLETE</span><h1>${state.score}/10</h1><p>Accuracy: <b>${pct}%</b></p><div class="row"><button class="primary" onclick="start('${state.topic.replaceAll("'","\\'")}')">Practice Again</button><button class="secondary" onclick="level(${state.level.id})">Choose Topic</button></div></section>`;
-}
-back.onclick=()=>{if(state.view==="quiz")level(state.level.id);else if(state.view==="level")home();else home()};
-home();
-if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+
+function home(){stop();S.view="home";back.classList.add("hidden");subtitle.textContent="Calculation Practice";screen.innerHTML=`<section class="hero"><span class="pill">PR CLERK 2026</span><h1>Calculation Practice</h1><p>Build calculation speed, accuracy and number sense.</p></section><div class="grid">${levels.map(l=>`<button class="card" onclick="level(${l.id})"><span class="pill">LEVEL ${l.id}</span><h2>${l.name}</h2><div class="topic">${l.desc}</div></button>`).join("")}</div><button class="full-test" onclick="startFull()">🎯 FULL BLIND TEST <span>All levels • timed • answers revealed only after submission</span></button>`}
+function level(id){stop();S.view="level";S.level=levels.find(x=>x.id===id);back.classList.remove("hidden");subtitle.textContent=`Level ${id}`;screen.innerHTML=`<div class="hero"><span class="pill">LEVEL ${id}</span><h1>${S.level.name}</h1><p>${S.level.desc}</p></div><div class="grid">${S.level.topics.map(t=>`<button class="section-row" onclick="start('${t.id}')"><span class="circle"></span><span><b>${t.name}</b><small>${t.desc}</small></span></button>`).join("")}</div>`}
+function cfg(topic){if(topic==="mixed")return[20,480];if(topic==="number")return[20,360];return[10,240]}
+function start(topic){let [n,sec]=cfg(topic);S.view="quiz";S.topic=topic;S.qs=Array.from({length:n},()=>make(topic));S.i=0;S.answers=Array(n).fill(null);S.limit=sec;S.start=Date.now();S.end=S.start+sec*1000;back.classList.remove("hidden");subtitle.textContent="Test in progress";render();tick()}
+function startFull(){let n=30,sec=900,pool=["tables","squares","cubes","percent","fractions","number","simplification","approximation","quadratic","hardquad"];S.view="quiz";S.level=null;S.topic="full";S.qs=Array.from({length:n},()=>make(P(pool)));S.i=0;S.answers=Array(n).fill(null);S.limit=sec;S.start=Date.now();S.end=S.start+sec*1000;back.classList.remove("hidden");subtitle.textContent="Test in progress";render();tick()}
+function stop(){if(S.timer)clearInterval(S.timer);S.timer=null}
+function remain(){return Math.max(0,Math.ceil((S.end-Date.now())/1000))}
+function tick(){stop();S.timer=setInterval(()=>{let t=remain(),el=$("#clock"),el2=$("#clock2");if(el)el.textContent=fmt(t);if(el2)el2.textContent=fmt(t);if(t<=0){stop();submit(true)}},250)}
+function fmt(s){return`${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`}
+function render(){
+ let q=S.qs[S.i],chosen=S.answers[S.i];
+ screen.innerHTML=`<div class="topline"><span class="pill">QUESTION ${S.i+1}/${S.qs.length}</span><b id="clock">${fmt(remain())}</b></div><div class="bar"><i style="width:${S.i/S.qs.length*100}%"></i></div><section class="question"><div class="blind-note">⏱ <b id="clock2">${fmt(remain())}</b> remaining</div><div class="expr">${q.expr}</div><div class="answer-box">${chosen??""}<span class="cursor">|</span></div><div class="keypad">${["1","2","3","4","5","6","7","8","9","0","/","."].map(k=>`<button type="button" onclick="key('${k}')">${k}</button>`).join("")}</div><div class="pad-actions"><button type="button" class="secondary" onclick="clearAns()">Clear</button><button type="button" class="secondary" onclick="backspace()">⌫</button></div><div class="row"><button class="secondary" onclick="prev()" ${S.i===0?"disabled":""}>← Previous</button><button class="primary" onclick="${S.i===S.qs.length-1?"submit(false)":"next()"}">${S.i===S.qs.length-1?"SUBMIT TEST":"Next →"}</button></div><div class="small center">No options • No topic labels • No instant feedback</div></section>`}
+function key(k){let a=S.answers[S.i]||"";if(k==="/"&&a.includes("/"))return;if(k==="."&&a.includes(".")&&a.includes("/"))return;S.answers[S.i]=a+k;render()}
+function clearAns(){S.answers[S.i]=null;render()}
+function backspace(){let a=S.answers[S.i]||"";S.answers[S.i]=a.slice(0,-1)||null;render()}
+function next(){if(S.i<S.qs.length-1){S.i++;render()}}
+function prev(){if(S.i>0){S.i--;render()}}
+function numericEqual(a,b){return Math.abs(Number(a)-Number(b))<1e-9}
+function answerCorrect(q,a){if(a===null)return false;if(q.skill.startsWith("Percentage →"))return a===q.ans;if(q.skill.startsWith("Fraction →"))return numericEqual(a,q.ans);return a===q.ans}
+function submit(auto){stop();let elapsed=Math.min(S.limit,(Date.now()-S.start)/1000),correct=0,wrong=0,un=0;S.qs.forEach((q,i)=>{if(S.answers[i]===null)un++;else if(answerCorrect(q,S.answers[i]))correct++;else wrong++});let marks=correct-wrong*.25;renderResult(elapsed,correct,wrong,un,marks,auto)}
+function renderResult(elapsed,c,w,u,marks,auto){
+ let avg=(c+w)?elapsed/(c+w):0,pace=elapsed/S.limit<.65?"Fast":elapsed/S.limit<.9?"Good":"Needs improvement";
+ screen.innerHTML=`<section class="hero"><span class="pill">${auto?"TIME UP":"TEST SUBMITTED"}</span><h1>${marks.toFixed(2)} / ${S.qs.length}</h1><p>${c} correct • ${w} wrong • ${u} unanswered</p><div class="result-grid"><div class="stat"><b>${fmt(elapsed)}</b><span class="small">Time used</span></div><div class="stat"><b>${fmt(avg)}</b><span class="small">Avg / attempted</span></div><div class="stat"><b>${fmt(Math.max(0,S.limit-elapsed))}</b><span class="small">Time left</span></div></div><div class="pace"><b>Time management: ${pace}</b><span>${Math.round(c/S.qs.length*100)}% correct</span></div></section><div class="note"><b>Answer review:</b> topic and difficulty are revealed only now.</div><div class="analysis">${S.qs.map((q,i)=>{let a=S.answers[i],ok=answerCorrect(q,a);return`<article class="review ${ok?"ok":a===null?"skip":"bad"}"><b>Q${i+1} ${ok?"✓ Correct":a===null?"— Unanswered":"✕ Wrong"}</b><div class="review-expr">${q.expr}</div><div class="small">Your answer: <b>${a??"Not answered"}</b> • Correct: <b>${q.ans}</b></div><div class="small">Section: <b>${q.diff}</b> • Topic: <b>${q.skill}</b></div><p>${q.exp}</p></article>`}).join("")}</div><div class="row end"><button class="primary" onclick="${S.topic==="full"?"startFull()":`start('${S.topic}')`}">Practice Again</button><button class="secondary" onclick="${S.topic==="full"?"home()":`level(${S.level?.id||1})`}">Back</button></div>`}
+back.onclick=()=>{if(S.view==="quiz"){if(confirm("Leave this test? Your answers will be lost.")){stop();S.topic==="full"?home():level(S.level.id)}return}if(S.view==="level")home();else home()}
+home();if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
