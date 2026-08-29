@@ -3,7 +3,7 @@ const screen=$("#screen"),back=$("#back"),subtitle=$("#subtitle");
 let S={view:"home",level:null,topic:null,qs:[],i:0,answers:[],qTimes:[],qStartedAt:0,start:0,end:0,limit:0,timer:null};
 
 const levels=[
-{id:1,name:"Easy",desc:"Calculation foundation",topics:[
+{id:1,name:"Easy",desc:"Calculation Foundation",topics:[
 {id:"tables",name:"Tables",desc:"Choose any table from 6–30"},
 {id:"squares",name:"Squares",desc:"1–60"},
 {id:"cubes",name:"Cubes",desc:"1–30"},
@@ -11,11 +11,11 @@ const levels=[
 {id:"fractions",name:"Fractions",desc:"Basic fraction practice"},
 {id:"number",name:"Number Games",desc:"Addition • Subtraction • Multiplication • Division"},
 {id:"mixed",name:"Mixed Set",desc:"Surprise mix of all Easy sections"}]},
-{id:2,name:"Moderate",desc:"Exam-style calculation",topics:[
+{id:2,name:"Moderate",desc:"Speed Maths",topics:[
 {id:"simplification",name:"Simplification",desc:"BODMAS and observation"},
 {id:"approximation",name:"Approximation",desc:"Fast approximation"},
 {id:"quadratic",name:"Quadratic Equations",desc:"Roots and comparison"}]},
-{id:3,name:"Hard",desc:"Mains-level practice",topics:[
+{id:3,name:"Hard",desc:"Calculation Foundation",topics:[
 {id:"hardquad",name:"Mains-Level Quadratic",desc:"Advanced quadratic practice"}]}
 ];
 
@@ -52,11 +52,11 @@ function make(topic,subtopic=null){
  let a=R(4,25),b=R(4,25),x=Math.max(a,b);return q(`x² − ${a+b}x + ${a*b} = 0; larger root?`,x,`The roots are ${a} and ${b}.`,"Mains-Level Quadratic","Hard")
 }
 
-function home(){stop();S.view="home";back.classList.add("hidden");subtitle.textContent="Calculation Practice";screen.innerHTML=`<section class="hero"><span class="pill">PR CLERK 2026</span><h1>Calculation Practice</h1><p>Build calculation speed, accuracy and number sense.</p></section><div class="grid">${levels.map(l=>`<button class="card" onclick="level(${l.id})"><span class="pill">LEVEL ${l.id}</span><h2>${l.name}</h2><div class="topic">${l.desc}</div></button>`).join("")}</div>`}
-function level(id){stop();S.view="level";S.level=levels.find(x=>x.id===id);back.classList.remove("hidden");subtitle.textContent=`Level ${id}`;screen.innerHTML=`<div class="hero"><span class="pill">LEVEL ${id}</span><h1>${S.level.name}</h1><p>${S.level.desc}</p></div><div class="grid ${id===1?"easy-grid":""}">${S.level.topics.map((t,idx)=>`<button class="card section-card" onclick="openSection('${t.id}')"><div><span class="mini-title">${t.id==="mixed"?"PRACTICE SET":"TOPIC"}</span><h3>${t.name}</h3><div class="topic">${t.desc}</div></div><span class="pill start">${t.id==="tables"||t.id==="number"?"CHOOSE →":"START PRACTICE →"}</span></button>`).join("")}</div>`}
+function home(){stop();S.view="home";back.classList.add("hidden");subtitle.textContent="Calculation Practice";screen.innerHTML=`<section class="hero"><span class="pill">PR CLERK 2026</span><h1>Calculation Practice</h1><p>Build calculation speed, accuracy and number sense.</p></section><div class="grid">${levels.map(l=>`<button class="card" onclick="level(${l.id})"><h2>${l.name}</h2><div class="topic">${l.desc}</div></button>`).join("")}</div>`}
+function level(id){stop();S.view="level";S.level=levels.find(x=>x.id===id);back.classList.remove("hidden");subtitle.textContent="Calculation Practice";screen.innerHTML=`<div class="hero"><h1>${S.level.name}</h1><p>${S.level.desc}</p></div><div class="grid ${id===1?"easy-grid":""}">${S.level.topics.map((t,idx)=>`<button class="card section-card" onclick="openSection('${t.id}')"><div><h3>${t.name}</h3><div class="topic">${t.desc}</div></div><span class="pill start">${t.id==="tables"||t.id==="number"?"CHOOSE →":"START PRACTICE →"}</span></button>`).join("")}</div>`}
 function openSection(topic){if(topic==="tables")return tablePicker();if(topic==="number")return numberPicker();start(topic)}
 function tablePicker(){S.view="tablePicker";subtitle.textContent="Tables • Choose a table";screen.innerHTML=`<div class="hero"><span class="pill">TABLES</span><h1>Choose your table</h1><p>Choose exactly which table you want to practise. You can change it anytime.</p></div><div class="picker-grid tables-picker">${Array.from({length:25},(_,i)=>i+6).map(n=>`<button class="card picker-card" onclick="start('tables',${n})"><span class="pill">TABLE ${n}</span><h3>Table ${n}</h3><div class="topic">${n} × 2 to ${n} × 20</div><span class="pill start">PRACTISE →</span></button>`).join("")}</div>`}
-function numberPicker(){S.view="numberPicker";subtitle.textContent="Number Games • Choose operation";screen.innerHTML=`<div class="hero"><span class="pill">NUMBER GAMES</span><h1>Choose an operation</h1><p>Choose what you want to practise now.</p></div><div class="grid picker-ops">${[["addition","Addition","Build speed with addition"],["subtraction","Subtraction","Build speed with subtraction"],["multiplication","Multiplication","Learn faster multiplication patterns"],["division","Division","Build fast division recall"]].map(([id,n,d])=>`<button class="card section-card" onclick="start('number','${id}')"><div><span class="mini-title">NUMBER GAME</span><h3>${n}</h3><div class="topic">${d}</div></div><span class="pill start">PRACTISE →</span></button>`).join("")}</div>`}
+function numberPicker(){S.view="numberPicker";subtitle.textContent="Number Games • Choose operation";screen.innerHTML=`<div class="hero"><span class="pill">NUMBER GAMES</span><h1>Choose an operation</h1><p>Choose what you want to practise now.</p></div><div class="grid picker-ops">${[["addition","Addition","Build speed with addition"],["subtraction","Subtraction","Build speed with subtraction"],["multiplication","Multiplication","Learn faster multiplication patterns"],["division","Division","Build fast division recall"]].map(([id,n,d])=>`<button class="card section-card" onclick="start('number','${id}')"><div><h3>${n}</h3><div class="topic">${d}</div></div><span class="pill start">PRACTISE →</span></button>`).join("")}</div>`}
 
 function cfg(topic){if(topic==="mixed")return[20,480];if(topic==="number")return[20,360];return[10,240]}
 function start(topic,subtopic=null){let [n,sec]=cfg(topic);S.view="quiz";S.topic=topic;S.qs=Array.from({length:n},()=>make(topic,subtopic));S.i=0;S.answers=Array(n).fill(null);S.qTimes=Array(n).fill(0);S.qStartedAt=Date.now();S.limit=sec;S.start=Date.now();S.end=S.start+sec*1000;back.classList.remove("hidden");subtitle.textContent="Test in progress";render();tick()}
