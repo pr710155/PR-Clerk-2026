@@ -81,10 +81,11 @@ function percent(){
  return q(`${a[0]}/${a[1]} = ? %`,a[2],`${a[0]}/${a[1]} = ${a[2]}%.`,"Fraction → Percentage");
 }
 function fraction(){
- const choices=[[1,2,"50"],[1,4,"25"],[3,4,"75"],[1,5,"20"],[2,5,"40"],[3,5,"60"],[4,5,"80"],[1,8,"12.5"],[3,8,"37.5"],[5,8,"62.5"],[7,8,"87.5"],[1,10,"10"],[3,10,"30"],[7,10,"70"],[9,10,"90"],[1,16,"6.25"],[3,20,"15"],[7,20,"35"],[9,20,"45"],[17,20,"85"],[1,3,"33.33"],[2,3,"66.67"],[5,6,"83.33"]];
+ const choices=[[1,2,50],[1,4,25],[3,4,75],[1,5,20],[2,5,40],[3,5,60],[4,5,80],[1,8,12.5],[3,8,37.5],[5,8,62.5],[7,8,87.5],[1,10,10],[3,10,30],[7,10,70],[9,10,90],[1,16,6.25],[3,20,15],[7,20,35],[9,20,45],[17,20,85],[1,3,33.33],[2,3,66.67],[5,6,83.33]];
  const a=P(choices);
- return q(`${a[0]}/${a[1]} = ? %`,a[2],`Convert the fraction to a percentage: ${a[0]}/${a[1]} × 100 = ${a[2]}%.`,`Fraction → Percentage`);
+ return q(`${a[0]}/${a[1]} = ? %`,a[2],`Convert the fraction to a percentage: ${a[0]}/${a[1]} × 100 = ${a[2]}%. Enter only the percentage value.`,`Fraction → Percentage`);
 }
+
 function easyNumberQ(expr,ans,exp,skill,pattern,approach,shortcut,methods){
  let z=q(expr,ans,exp,skill,"Easy");
  z.coach={
@@ -97,7 +98,7 @@ function easyNumberQ(expr,ans,exp,skill,pattern,approach,shortcut,methods){
  return z;
 }
 function add(){
- const type=R(1,10);let a,b,x,pattern,approach,shortcut,methods;
+ const type=R(1,10);let a,b,c,x,pattern,approach,shortcut,methods;
  if(type===1){a=R(1,9);b=R(1,9);x=a+b;pattern="Pair to 10 or use instant single-digit recall.";approach="Add from left to right and look for a pair that makes 10.";shortcut="If the pair is close to 10, complete 10 and adjust.";methods=["Single-digit instant recall.","Make 10: 7+3=10.","For 8+6, think 8+2+4=14."]}
  else if(type===2){a=R(1,9);b=R(10,99);x=a+b;pattern="Break the two-digit number into tens and ones.";approach="Add the small number to the tens first, then the units.";shortcut=`${b}+${a} → ${Math.floor(b/10)*10}+${b%10+a}; avoid column addition.`;methods=["Left-to-right addition.","Add tens first, then ones.","If the units cross 10, carry mentally."]}
  else if(type===3){a=R(10,99);b=R(10,99);x=a+b;pattern="Look for a round-number compensation opportunity.";approach="Move one addend to the nearest multiple of 10 and compensate.";let r=10-(b%10);shortcut=`Add ${r} to ${b}, then subtract ${r}: ${a}+${b} = ${a}+${b+r}−${r}.`;methods=["Compensation near 10/100.","Pair tens and units separately.","Left-to-right addition."]}
