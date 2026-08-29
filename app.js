@@ -311,3 +311,1020 @@ function renderResult(elapsed,c,w,u,marks,auto){
 
 back.onclick=()=>{if(S.view==="quiz"){if(confirm("Leave this test? Your answers will be lost.")){stop();level(S.level.id)}return}if(S.view==="setup"||S.view==="tablePicker"||S.view==="numberPicker"){level(S.level.id);return}if(S.view==="level")home();else home()}
 home();if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+
+// ==================================================
+// PR CLERK 2026 - CLERK PRELIMS EXAM-LEVEL MODERATE GENERATOR
+// ==================================================
+// Fresh, original questions inspired by the calculation structures
+// and difficulty profile of Clerk Prelims exams.
+// No DI, no Arithmetic word problems, no Quadratic Equations.
+// ==================================================
+
+const ModerateGenerator = {
+  getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  },
+
+  getRandomChoice(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  },
+
+  gcd(a, b) {
+    a = Math.abs(a);
+    b = Math.abs(b);
+    while (b) {
+      const t = a % b;
+      a = b;
+      b = t;
+    }
+    return a || 1;
+  },
+
+  lcm(a, b) {
+    return Math.abs(a * b) / this.gcd(a, b);
+  },
+
+  round(n, places = 6) {
+    const p = 10 ** places;
+    return Math.round((n + Number.EPSILON) * p) / p;
+  },
+
+  clean(n) {
+    const x = this.round(n);
+    return Number.isInteger(x) ? String(x) : String(x);
+  },
+
+  fraction(num, den) {
+    if (den < 0) { num = -num; den = -den; }
+    const g = this.gcd(num, den);
+    return { num: num / g, den: den / g };
+  },
+
+  mixed(num, den) {
+    const f = this.fraction(num, den);
+    const whole = Math.floor(Math.abs(f.num) / f.den) * Math.sign(f.num || 1);
+    const rem = Math.abs(f.num) % f.den;
+    if (!rem) return String(whole);
+    if (!whole) return `${f.num}/${f.den}`;
+    return `${whole} ${rem}/${f.den}`;
+  },
+
+  pct(value, base) {
+    return this.round((value / 100) * base);
+  },
+
+  // --------------------------------------------------
+  // QUALITY / UNIQUENESS
+  // --------------------------------------------------
+
+  _used: new Set(),
+
+  normalize(text) {
+    return String(text)
+      .replace(/\s+/g, "")
+      .replace(/[×x]/g, "*")
+      .replace(/[÷]/g, "/")
+      .toLowerCase();
+  },
+
+  isNew(question) {
+    const key = this.normalize(question);
+    if (this._used.has(key)) return false;
+    this._used.add(key);
+
+    // Prevent unbounded memory growth in a long browser session.
+    if (this._used.size > 5000) {
+      const first = this._used.values().next().value;
+      this._used.delete(first);
+    }
+    return true;
+  },
+
+  quality(question, answer, meta = {}) {
+    if (!question || answer === "" || answer == null) return false;
+    const answerText = String(answer).trim();
+    const numericAnswer = Number(answerText);
+    const fractionAnswer = /^-?\d+(?:\s+\d+\/\d+|\/\d+)$/.test(answerText);
+    if (!Number.isFinite(numericAnswer) && !fractionAnswer) return false;
+    if (!this.isNew(question)) return false;
+
+    // Moderate questions should involve meaningful calculation,
+    // but must remain practical for Clerk Prelims speed practice.
+    const ops = (question.match(/[+−\-×÷*/%]/g) || []).length;
+    const digits = (question.match(/\d/g) || []).length;
+
+    if (meta.requireMultiStep && ops < 2) return false;
+    if (meta.minDigits && digits < meta.minDigits) return false;
+    if (meta.maxOps && ops > meta.maxOps) return false;
+
+    return true;
+  },
+
+  package(type, question, answer, highlight, approach, shortcut, steps, quickMethods = []) {
+    return {
+      type,
+      question,
+      answer: String(answer),
+      expr: question,
+      ans: String(answer),
+      skill: type,
+      highlight,
+      coach: {
+        highlight,
+        approach,
+        shortcut,
+        steps,
+        quickMethods
+      }
+    };
+  },
+
+  // --------------------------------------------------
+  // SIMPLIFICATION
+  // --------------------------------------------------
+
+  generateSimplification() {
+    const generators = [
+      () => this._mixedFractionMissing(),
+      () => this._decimalChain(),
+      () => this._percentageMissing(),
+      () => this._percentageTwoTerm(),
+      () => this._rootChain(),
+      () => this._fractionReciprocal(),
+      () => this._powerCancellation(),
+      () => this._mixedFractionDivision(),
+      () => this._percentageRootMix(),
+      () => this._decimalPercentageMix(),
+      () => this._fractionDecimalMix(),
+      () => this._nestedBodmas()
+    ];
+
+    for (let attempt = 0; attempt < 150; attempt++) {
+      const result = this.getRandomChoice(generators)();
+      if (result && this.quality(result.question, result.answer, {
+        requireMultiStep: true,
+        minDigits: 8,
+        maxOps: 8
+      })) return result;
+    }
+
+    return this._decimalChain();
+  },
+
+  _mixedFractionMissing() {
+    const d1 = this.getRandomChoice([3, 4, 5, 6, 8]);
+    const d2 = this.getRandomChoice([3, 4, 5, 6, 8, 10]);
+    const w1 = this.getRandomInt(2, 6);
+    const w2 = this.getRandomInt(2, 7);
+    const n1 = this.getRandomInt(1, d1 - 1);
+    const n2 = this.getRandomInt(1, d2 - 1);
+
+    const target = this.getRandomInt(w1 + w2 + 2, w1 + w2 + 7);
+    const missing = target - (w1 + n1 / d1) - (w2 + n2 / d2);
+
+    if (missing <= 0) return null;
+
+    const den = this.lcm(d1, d2);
+    const num = Math.round(missing * den);
+    const answer = this.mixed(num, den);
+
+    return this.package(
+      "Simplification",
+      `${w1} ${n1}/${d1} + ${w2} ${n2}/${d2} + ? = ${target}`,
+      answer,
+      "Convert the mixed fractions mentally, then use the target to work backwards.",
+      "Find the integer part first and handle the fractional remainder with the smallest common denominator.",
+      "Do not add everything blindly. Subtract the known whole-number parts from the target first, then solve only the remaining fraction.",
+      [
+        `Known values = ${this.round(w1 + n1 / d1)} + ${this.round(w2 + n2 / d2)}.`,
+        `Missing value = target − known values.`,
+        `Final answer = ${answer}.`
+      ],
+      [
+        "Separate whole numbers and fractional parts.",
+        "Use the LCM only for the fractional remainder.",
+        "Work backwards from the target."
+      ]
+    );
+  },
+
+  _decimalChain() {
+    const a = this.getRandomChoice([198.27, 216.35, 248.45, 312.64, 396.27, 428.35, 512.48, 625.75]);
+    const b = this.getRandomChoice([102.13, 114.65, 137.35, 208.52, 246.13, 318.65]);
+    const c = this.getRandomChoice([20.4, 30.4, 40.4, 50.4, 60.4]);
+    const d = this.getRandomChoice([12.5, 15.5, 18.5, 20.5]);
+
+    const answer = this.round(a + b - c - d);
+
+    return this.package(
+      "Simplification",
+      `${a} + ${b} − ${c} − ${d} = ?`,
+      answer,
+      "Look at the decimal parts before doing the whole-number arithmetic.",
+      "Pair decimal parts that make a clean tenth or whole number, then finish the integer calculation.",
+      "For example, .27 + .13 = .40. Look for cancellation or completion before adding large parts.",
+      [
+        `Combine decimal parts strategically.`,
+        `Combine the integer parts.`,
+        `Final answer = ${answer}.`
+      ],
+      [
+        "Pair hundredths/tenths first.",
+        "Avoid carrying through every column if decimals cancel.",
+        "Estimate the answer before finalising."
+      ]
+    );
+  },
+
+  _percentageMissing() {
+    const pct = this.getRandomChoice([12.5, 15, 18, 20, 22.5, 25, 30, 32, 37.5, 40, 45, 60, 62.5, 75]);
+    const base = this.getRandomChoice([160, 200, 240, 280, 320, 360, 400, 480, 560, 640]);
+    const add = this.getRandomInt(20, 120);
+    const target = this.pct(pct, base) + add;
+
+    if (!Number.isFinite(target) || !Number.isInteger(target)) return null;
+
+    return this.package(
+      "Simplification",
+      `?% of ${base} + ${add} = ${target}`,
+      pct,
+      "Find the percentage amount first by subtracting the fixed term from the target.",
+      `Target − ${add} gives the required percentage value. Compare that value with ${base}.`,
+      "Use standard fraction equivalents: 12.5%=1/8, 25%=1/4, 37.5%=3/8, 62.5%=5/8, 75%=3/4.",
+      [
+        `Required percentage amount = ${target} − ${add}.`,
+        `That amount is ${pct}% of ${base}.`,
+        `Answer = ${pct}%.`
+      ],
+      [
+        "Convert familiar percentages to fractions.",
+        "Subtract the known term first.",
+        "Check by multiplying the percentage back."
+      ]
+    );
+  },
+
+  _percentageTwoTerm() {
+    const p1 = this.getRandomChoice([15, 20, 25, 30, 35, 40, 45, 60]);
+    const p2 = this.getRandomChoice([12.5, 20, 25, 30, 37.5, 40, 50]);
+    const a = this.getRandomChoice([160, 200, 240, 280, 320, 360, 400]);
+    const b = this.getRandomChoice([240, 300, 360, 400, 480, 600]);
+
+    const v1 = this.pct(p1, a);
+    const v2 = this.pct(p2, b);
+    const target = v1 + v2;
+
+    if (!Number.isInteger(target)) return null;
+
+    return this.package(
+      "Simplification",
+      `${p1}% of ${a} + ${p2}% of ${b} = ?`,
+      target,
+      "Convert the percentages into familiar fractions before multiplying.",
+      "Evaluate each percentage independently and add the two clean results.",
+      "Use 25%=1/4, 20%=1/5, 12.5%=1/8, 37.5%=3/8, 50%=1/2.",
+      [
+        `${p1}% of ${a} = ${v1}.`,
+        `${p2}% of ${b} = ${v2}.`,
+        `Answer = ${target}.`
+      ],
+      [
+        "Use fraction equivalents.",
+        "Calculate the easier percentage first.",
+        "Add only after both terms are simplified."
+      ]
+    );
+  },
+
+  _rootChain() {
+    const root = this.getRandomInt(18, 36);
+    const square = root * root;
+    const add = this.getRandomInt(18, 60);
+    const mult = this.getRandomChoice([18, 20, 22, 24, 25, 28]);
+    const div = this.getRandomChoice([12, 14, 16, 18, 20, 21, 24, 28]);
+
+    const raw = ((root + add) * mult) / div;
+    if (!Number.isInteger(raw)) return null;
+
+    return this.package(
+      "Simplification",
+      `{(√${square} + ${add}) × ${mult}} ÷ ${div} = ?`,
+      raw,
+      `Recognise √${square} immediately, then look for cancellation before multiplying fully.`,
+      `Evaluate the root first. Combine it with ${add}, then cancel common factors between the numerator and ${div}.`,
+      "Cancel before multiplication whenever possible. This prevents a large intermediate product.",
+      [
+        `√${square} = ${root}.`,
+        `${root} + ${add} = ${root + add}.`,
+        `(${root + add} × ${mult}) ÷ ${div} = ${raw}.`
+      ],
+      [
+        "Know common square roots quickly.",
+        "Cancel common factors before multiplying.",
+        "Keep the intermediate number small."
+      ]
+    );
+  },
+
+  _fractionReciprocal() {
+    const x = this.getRandomInt(2, 6);
+    const n1 = this.getRandomInt(1, 3);
+    const d1 = this.getRandomChoice([4, 5, 6, 8]);
+    const n2 = this.getRandomInt(1, 3);
+    const d2 = this.getRandomChoice([4, 5, 6, 8]);
+    const multiplier = this.getRandomChoice([12, 16, 20, 24]);
+
+    const v = x + n1 / d1 + n2 / d2;
+    const answer = this.round(v * multiplier);
+
+    if (!Number.isInteger(answer)) return null;
+
+    return this.package(
+      "Simplification",
+      `(${x} ${n1}/${d1} + ${n2}/${d2}) ÷ 1/${multiplier} = ?`,
+      answer,
+      "Dividing by a unit fraction means multiplying by its denominator.",
+      `First simplify the mixed/fractional expression, then multiply by ${multiplier}.`,
+      `Replace ÷ 1/${multiplier} with × ${multiplier}; cancel or distribute before doing a large multiplication.`,
+      [
+        `÷ 1/${multiplier} = × ${multiplier}.`,
+        `Simplify the bracket.`,
+        `Final answer = ${answer}.`
+      ],
+      [
+        "Never divide by a unit fraction directly.",
+        "Convert it to multiplication.",
+        "Simplify fractions before multiplying."
+      ]
+    );
+  },
+
+  _powerCancellation() {
+    const base = this.getRandomChoice([2, 4]);
+    const a = this.getRandomInt(2, 4);
+    const b = this.getRandomInt(2, 4);
+    const c = this.getRandomInt(1, 3);
+
+    const left = base ** a;
+    const middle = base ** b;
+    const divisor = base ** c;
+    const answer = base ** (a + b - c);
+
+    if (answer <= 0 || !Number.isInteger(answer)) return null;
+
+    return this.package(
+      "Simplification",
+      `(${left} × ${middle}) ÷ ${divisor} = ${base}^?`,
+      a + b - c,
+      "Rewrite every number using the same base instead of calculating the large powers.",
+      `Use ${left}=${base}^${a}, ${middle}=${base}^${b}, and ${divisor}=${base}^${c}; then add/subtract exponents.`,
+      "Same-base multiplication adds exponents; division subtracts exponents.",
+      [
+        `${left} = ${base}^${a}.`,
+        `${middle} = ${base}^${b}.`,
+        `${divisor} = ${base}^${c}.`,
+        `Exponent = ${a}+${b}−${c} = ${a + b - c}.`
+      ],
+      [
+        "Do not calculate the large powers.",
+        "Convert to a common base.",
+        "Apply index laws directly."
+      ]
+    );
+  },
+
+  _mixedFractionDivision() {
+    const d = this.getRandomChoice([3, 4, 5, 6, 8]);
+    const n = this.getRandomInt(1, d - 1);
+    const whole = this.getRandomInt(3, 7);
+    const divisor = this.getRandomChoice([2, 4, 5, 8, 10]);
+
+    const numerator = whole * d + n;
+    const resultNum = numerator;
+    const resultDen = d * divisor;
+    const reduced = this.fraction(resultNum, resultDen);
+    const answer = this.mixed(reduced.num, reduced.den);
+
+    if (!Number.isFinite(reduced.num) || reduced.num <= 0) return null;
+
+    return this.package(
+      "Simplification",
+      `${whole} ${n}/${d} ÷ ${divisor} = ?`,
+      answer,
+      "Turn the mixed number into a fraction only when it makes division cleaner.",
+      "Convert to an improper fraction, cancel the divisor if possible, then simplify.",
+      "Cancellation before division is faster than converting everything into decimals.",
+      [
+        `${whole} ${n}/${d} = ${(whole * d + n)}/${d}.`,
+        `Divide the fraction by ${divisor} and reduce.`,
+        `Final answer = ${answer}.`
+      ],
+      [
+        "Use cancellation before multiplying.",
+        "Keep fractions exact.",
+        "Avoid decimal conversion."
+      ]
+    );
+  },
+
+  _percentageRootMix() {
+    const root = this.getRandomInt(12, 30);
+    const square = root * root;
+    const pct = this.getRandomChoice([20, 25, 40, 50, 75]);
+    const add = this.getRandomInt(20, 80);
+    const mult = this.getRandomChoice([2, 3, 4]);
+
+    const answer = this.pct(pct, root + add) * mult;
+
+    if (!Number.isInteger(answer)) return null;
+
+    return this.package(
+      "Simplification",
+      `${pct}% of (√${square} + ${add}) × ${mult} = ?`,
+      answer,
+      "Take the square root first, then convert the percentage to a fraction.",
+      `√${square} = ${root}; add ${add}; apply ${pct}% as a simple fraction; multiply by ${mult}.`,
+      "25%=1/4, 50%=1/2, 75%=3/4. Apply the fraction before the final multiplication.",
+      [
+        `√${square} = ${root}.`,
+        `${root} + ${add} = ${root + add}.`,
+        `${pct}% of ${root + add} × ${mult} = ${answer}.`
+      ],
+      [
+        "Recognise the square root immediately.",
+        "Use fraction equivalents for percentages.",
+        "Multiply last."
+      ]
+    );
+  },
+
+  _decimalPercentageMix() {
+    const decimal = this.getRandomChoice([0.25, 0.4, 0.5, 0.75, 1.25, 1.5, 2.5]);
+    const base = this.getRandomChoice([160, 200, 240, 320, 400, 480]);
+    const pct = this.getRandomChoice([12.5, 25, 37.5, 50, 75]);
+    const pctBase = this.getRandomChoice([160, 240, 320, 400, 640]);
+
+    const answer = this.round(decimal * base + this.pct(pct, pctBase));
+    if (!Number.isInteger(answer)) return null;
+
+    return this.package(
+      "Simplification",
+      `${decimal} × ${base} + ${pct}% of ${pctBase} = ?`,
+      answer,
+      "Convert the decimal multiplier and percentage into simple fractions before calculating.",
+      `Treat ${decimal} as a familiar fraction and ${pct}% as a fraction; calculate both terms separately.`,
+      "0.25=1/4, 0.5=1/2, 0.75=3/4, 1.25=5/4, 2.5=5/2.",
+      [
+        `${decimal} × ${base} = ${this.round(decimal * base)}.`,
+        `${pct}% of ${pctBase} = ${this.pct(pct, pctBase)}.`,
+        `Answer = ${answer}.`
+      ],
+      [
+        "Convert decimals to fractions.",
+        "Use percentage equivalents.",
+        "Avoid long decimal multiplication."
+      ]
+    );
+  },
+
+  _fractionDecimalMix() {
+    const d = this.getRandomChoice([4, 5, 8, 10]);
+    const n = this.getRandomInt(1, d - 1);
+    const decimal = this.getRandomChoice([0.25, 0.5, 0.75, 1.25, 1.5, 2.5]);
+    const base = this.getRandomChoice([80, 120, 160, 200, 240]);
+    const answer = this.round(n / d * base + decimal * base);
+
+    if (!Number.isInteger(answer)) return null;
+
+    return this.package(
+      "Simplification",
+      `(${n}/${d} + ${decimal}) × ${base} = ?`,
+      answer,
+      "Combine the fraction and decimal as equivalent fractions before multiplying.",
+      `Convert ${decimal} to a fraction, add it to ${n}/${d}, then multiply by ${base}.`,
+      "If the denominator matches a factor of the base, cancel before multiplying.",
+      [
+        `Convert ${decimal} to a fraction.`,
+        `Combine the fractions.`,
+        `Multiply by ${base} after cancellation.`,
+        `Answer = ${answer}.`
+      ],
+      [
+        "Convert decimals to fractions.",
+        "Look for denominator/base cancellation.",
+        "Multiply only after simplification."
+      ]
+    );
+  },
+
+  _nestedBodmas() {
+    const a = this.getRandomInt(12, 40);
+    const b = this.getRandomInt(6, 18);
+    const c = this.getRandomInt(8, 24);
+    const d = this.getRandomChoice([4, 5, 6, 8]);
+    const e = this.getRandomChoice([3, 4, 5]);
+
+    const inner = a + b * c;
+    const answer = inner / d - e;
+
+    if (!Number.isInteger(answer) || answer <= 0) return null;
+
+    return this.package(
+      "Simplification",
+      `(${a} + ${b} × ${c}) ÷ ${d} − ${e} = ?`,
+      answer,
+      "Apply multiplication inside the bracket first, then look for exact division.",
+      `Calculate ${b}×${c}, add ${a}, divide by ${d}, then subtract ${e}.`,
+      "Check whether the bracket total is divisible by the denominator before doing unnecessary decimal work.",
+      [
+        `${b} × ${c} = ${b * c}.`,
+        `${a} + ${b * c} = ${inner}.`,
+        `${inner} ÷ ${d} − ${e} = ${answer}.`
+      ],
+      [
+        "Follow BODMAS.",
+        "Check divisibility before dividing.",
+        "Keep intermediate values exact."
+      ]
+    );
+  },
+
+  // --------------------------------------------------
+  // APPROXIMATION
+  // --------------------------------------------------
+
+  generateApproximation() {
+    const generators = [
+      () => this._approxMixed(),
+      () => this._approxDecimal(),
+      () => this._approxPercentage(),
+      () => this._approxDivision(),
+      () => this._approxRoot()
+    ];
+
+    for (let i = 0; i < 100; i++) {
+      const r = this.getRandomChoice(generators)();
+      if (r && this.quality(r.question, r.answer, { requireMultiStep: true, minDigits: 8, maxOps: 7 })) return r;
+    }
+    return this._approxMixed();
+  },
+
+  _approxMixed() {
+    const a = this.getRandomInt(190, 890);
+    const b = this.getRandomInt(20, 90);
+    const c = this.getRandomInt(10, 90);
+    const d = this.getRandomChoice([4, 5, 8, 10, 12]);
+
+    const answer = Math.round((a + b) * c / d);
+
+    return this.package(
+      "Approximation",
+      `(${a} + ${b}) × ${c} ÷ ${d} ≈ ?`,
+      answer,
+      "Round only where it keeps the option range safe, then simplify before multiplying.",
+      "Combine the bracket, choose a nearby easy value, and use cancellation before the final multiplication.",
+      "Use the options as a range check; don't chase an exact value when approximation is enough.",
+      [`Approximate the bracket.`, `Simplify the multiplication/division.`, `Nearest answer ≈ ${answer}.`],
+      ["Round to friendly values.", "Cancel before multiplying.", "Use options to verify the range."]
+    );
+  },
+
+  _approxDecimal() {
+    const a = (this.getRandomInt(120, 850) + this.getRandomChoice([0.24, 0.39, 0.51, 0.68, 0.81])).toFixed(2);
+    const b = this.getRandomChoice([1.98, 2.02, 3.01, 4.99, 5.02, 9.98]);
+    const c = this.getRandomInt(20, 90);
+
+    const answer = Math.round((Number(a) * Number(b)) / c);
+
+    return this.package(
+      "Approximation",
+      `${a} × ${b} ÷ ${c} ≈ ?`,
+      answer,
+      "Replace decimals such as 1.98, 2.02, 4.99 and 9.98 with their nearest convenient values.",
+      `Use ${b} ≈ ${Math.round(Number(b))}, then divide after the multiplication estimate.`,
+      "The aim is not exact decimal multiplication; recognise near-integer values immediately.",
+      [`${b} is close to ${Math.round(Number(b))}.`, `Estimate the product and divide by ${c}.`, `Nearest answer ≈ ${answer}.`],
+      ["Round near-integer decimals.", "Estimate before calculating.", "Check the answer range."]
+    );
+  },
+
+  _approxPercentage() {
+    const a = this.getRandomInt(180, 920);
+    const pct = this.getRandomChoice([19.8, 24.9, 33.3, 49.8, 50.2, 74.9]);
+    const b = this.getRandomInt(20, 80);
+    const answer = Math.round((a * pct / 100) + b);
+
+    return this.package(
+      "Approximation",
+      `${a} × ${pct}% + ${b} ≈ ?`,
+      answer,
+      "Round the percentage to a nearby simple percentage, then use the options to confirm.",
+      `Treat ${pct}% as approximately ${Math.round(pct)}% and calculate the main term quickly.`,
+      "Near 20%, 25%, 33⅓%, 50% and 75% values are designed to be recognised instantly.",
+      [`Approximate ${pct}% using a nearby familiar percentage.`, `Add ${b}.`, `Nearest answer ≈ ${answer}.`],
+      ["Use familiar percentage fractions.", "Don't calculate unnecessary decimal precision.", "Confirm against the options."]
+    );
+  },
+
+  _approxDivision() {
+    const divisor = this.getRandomChoice([19.8, 24.9, 49.8, 50.2, 99.5]);
+    const multiplier = this.getRandomChoice([20, 25, 50, 100]);
+    const dividend = Math.round(Number(divisor) * multiplier);
+    const add = this.getRandomInt(15, 80);
+    const answer = Math.round(dividend / Number(divisor) + add);
+
+    return this.package(
+      "Approximation",
+      `${dividend} ÷ ${divisor} + ${add} ≈ ?`,
+      answer,
+      "Recognise the divisor as a near-friendly number and estimate the quotient first.",
+      `Treat ${divisor} as its nearby round value, find the quotient, then add ${add}.`,
+      "Near 20/25/50/100 divisors are usually faster to handle as friendly numbers.",
+      [`Approximate the divisor.`, `Estimate the quotient ≈ ${Math.round(dividend / Number(divisor))}.`, `Add ${add}.`],
+      ["Use a friendly divisor.", "Estimate the quotient before exact division.", "Use answer choices as a safety check."]
+    );
+  },
+
+  _approxRoot() {
+    const n = this.getRandomInt(18, 42);
+    const near = n * n + this.getRandomChoice([-3, -2, -1, 1, 2, 3]);
+    const a = this.getRandomInt(20, 80);
+    const answer = Math.round(Math.sqrt(near) * a);
+
+    return this.package(
+      "Approximation",
+      `√${near} × ${a} ≈ ?`,
+      answer,
+      "Identify the nearest perfect square before estimating the root.",
+      `√${near} is close to ${n}; multiply that estimate by ${a}.`,
+      "For approximation, the nearest perfect square is usually all you need.",
+      [`${near} is close to ${n}² = ${n * n}.`, `So √${near} ≈ ${n}.`, `Multiply by ${a} → ≈ ${answer}.`],
+      ["Locate the nearest square.", "Use the root as the estimate.", "Check which option range fits."]
+    );
+  },
+
+  // --------------------------------------------------
+  // NUMBER SERIES
+  // --------------------------------------------------
+
+  generateNumberSeries(isWrongSeries = false) {
+    const generators = [
+      () => this._seriesAltMultiplyAdd(),
+      () => this._seriesIncreasingDifference(),
+      () => this._seriesSquareDifference(),
+      () => this._seriesMultiplyAdjust(),
+      () => this._seriesFractionMultiply(),
+      () => this._seriesAlternating(),
+      () => this._seriesSecondDifference(),
+      () => this._seriesConsecutiveProduct()
+    ];
+
+    for (let attempt = 0; attempt < 150; attempt++) {
+      const generated = this.getRandomChoice(generators)();
+      if (!generated) continue;
+
+      const series = generated.series.slice();
+      const pattern = generated.pattern;
+      const answerIndex = this.getRandomInt(2, 4);
+
+      if (!isWrongSeries) {
+        const answer = series[answerIndex];
+        series[answerIndex] = "?";
+
+        const question = `Find the missing term: ${series.join(", ")}`;
+        if (!this.isNew(question)) continue;
+
+        return this.package(
+          "Missing Number Series",
+          question,
+          answer,
+          "Check the relationship between consecutive terms before calculating every possibility.",
+          pattern.approach,
+          pattern.shortcut,
+          pattern.steps,
+          pattern.quickMethods
+        );
+      }
+
+      // Wrong-series construction: create a valid series first, then alter
+      // one displayed term. The answer is the ACTUAL wrong displayed term.
+      const wrongIndex = this.getRandomInt(2, 5);
+      const correctValue = series[wrongIndex];
+
+      let wrongValue;
+      const offsets = [
+        Math.max(1, Math.round(Math.abs(correctValue) * 0.04)),
+        Math.max(2, Math.round(Math.abs(correctValue) * 0.06)),
+        Math.max(3, Math.round(Math.abs(correctValue) * 0.08))
+      ];
+      const offset = this.getRandomChoice(offsets);
+      wrongValue = correctValue + (Math.random() < 0.5 ? offset : -offset);
+
+      if (wrongValue === correctValue || wrongValue <= 0) continue;
+
+      series[wrongIndex] = wrongValue;
+      const question = `Find the wrong term: ${series.join(", ")}`;
+      if (!this.isNew(question)) continue;
+
+      return this.package(
+        "Wrong Number Series",
+        question,
+        wrongValue,
+        "Check the series rule across all terms; the wrong displayed value should break the established relationship.",
+        pattern.approach,
+        pattern.shortcut,
+        [
+          ...pattern.steps,
+          `The displayed wrong term is ${wrongValue}; the value required by the pattern is ${correctValue}.`
+        ],
+        pattern.quickMethods
+      );
+    }
+
+    return this._fallbackSeries(isWrongSeries);
+  },
+
+  _seriesAltMultiplyAdd() {
+    const start = this.getRandomInt(6, 15);
+    const m = this.getRandomChoice([2, 3]);
+    const adj = this.getRandomInt(1, 5);
+    const s = [start];
+
+    for (let i = 0; i < 6; i++) {
+      s.push(s[s.length - 1] * m + (i % 2 === 0 ? adj : -adj));
+    }
+
+    return {
+      series: s,
+      pattern: {
+        approach: `Test multiplication first, then check the small alternating adjustment: ×${m} ± ${adj}.`,
+        shortcut: "Compare each term with the previous term; the multiplier is more stable than the raw differences.",
+        steps: [`Apply ×${m} and alternate +${adj}/−${adj}.`, "The same rule continues through the series."],
+        quickMethods: ["Check ratios first.", "Look for a small repeating adjustment.", "Verify the rule with at least three transitions."]
+      }
+    };
+  },
+
+  _seriesIncreasingDifference() {
+    const start = this.getRandomInt(20, 80);
+    const first = this.getRandomInt(5, 15);
+    const increment = this.getRandomChoice([2, 3, 4, 5]);
+    const s = [start];
+    let d = first;
+
+    for (let i = 0; i < 6; i++) {
+      s.push(s[s.length - 1] + d);
+      d += increment;
+    }
+
+    return {
+      series: s,
+      pattern: {
+        approach: "Write the first differences. If those differences themselves form a simple progression, use the second layer.",
+        shortcut: `Differences increase by ${increment} each time.`,
+        steps: [`First difference starts at ${first}.`, `Each following difference increases by ${increment}.`, "Continue the difference pattern."],
+        quickMethods: ["Use a difference column.", "Check second differences.", "Don't search for multiplication if the differences are clearly structured."]
+      }
+    };
+  },
+
+  _seriesSquareDifference() {
+    const start = this.getRandomInt(20, 70);
+    const shift = this.getRandomChoice([1, 2, 3]);
+    const s = [start];
+
+    for (let i = 1; i <= 6; i++) {
+      s.push(s[s.length - 1] + (i + shift) ** 2);
+    }
+
+    return {
+      series: s,
+      pattern: {
+        approach: "Calculate consecutive differences and compare them with square numbers.",
+        shortcut: `The differences follow consecutive squares beginning from ${1 + shift}².`,
+        steps: ["Find successive differences.", `Match them to ${1 + shift}², ${2 + shift}², ${3 + shift}²...`, "Continue the square-difference pattern."],
+        quickMethods: ["Check differences.", "Know small squares instantly.", "Confirm with two or three differences."]
+      }
+    };
+  },
+
+  _seriesMultiplyAdjust() {
+    const start = this.getRandomInt(5, 12);
+    const m = this.getRandomChoice([2, 3, 4]);
+    const startAdj = this.getRandomInt(1, 4);
+    const s = [start];
+
+    for (let i = 0; i < 6; i++) {
+      s.push(s[s.length - 1] * m + startAdj * (i + 1));
+    }
+
+    return {
+      series: s,
+      pattern: {
+        approach: `Look for ×${m}, then examine the increasing added values.`,
+        shortcut: `Each step is ×${m} + ${startAdj}×(step number).`,
+        steps: [`Multiply each term by ${m}.`, "The required adjustment increases regularly.", "Continue the combined rule."],
+        quickMethods: ["Estimate the multiplier first.", "Subtract the multiplied value to reveal the adjustment.", "Check the adjustment progression."]
+      }
+    };
+  },
+
+  _seriesFractionMultiply() {
+    const start = this.getRandomChoice([8, 12, 16, 20, 24, 32]);
+    const factors = this.getRandomChoice([
+      [1.5, 2, 2.5, 3, 3.5, 4],
+      [0.5, 1, 1.5, 2, 2.5, 3]
+    ]);
+    const s = [start];
+
+    for (const f of factors) s.push(Math.round(s[s.length - 1] * f));
+
+    return {
+      series: s,
+      pattern: {
+        approach: "Compare consecutive terms as multiplication factors rather than only looking at differences.",
+        shortcut: `The multipliers progress in a regular sequence: ${factors.join(", ")}.`,
+        steps: ["Divide each term by the previous term.", "Identify the multiplier progression.", "Continue it for the missing/wrong position."],
+        quickMethods: ["Check ratios.", "Recognise halves and halves-plus-one patterns.", "Use exact multiplication rather than decimals where possible."]
+      }
+    };
+  },
+
+  _seriesAlternating() {
+    const start = this.getRandomInt(10, 40);
+    const s = [start];
+    const a = this.getRandomChoice([3, 5, 7]);
+    const b = this.getRandomChoice([2, 4, 6]);
+
+    for (let i = 0; i < 6; i++) {
+      s.push(s[s.length - 1] + (i % 2 === 0 ? a : b));
+    }
+
+    return {
+      series: s,
+      pattern: {
+        approach: "Separate odd-to-even and even-to-odd transitions.",
+        shortcut: `Two additions alternate: +${a}, +${b}.`,
+        steps: [`Odd transition uses +${a}.`, `Even transition uses +${b}.`, "Repeat the alternating pair."],
+        quickMethods: ["Split the sequence into two transitions.", "Don't force one difference rule.", "Check positions rather than only values."]
+      }
+    };
+  },
+
+  _seriesSecondDifference() {
+    const start = this.getRandomInt(15, 60);
+    const d1 = this.getRandomInt(3, 10);
+    const dd = this.getRandomChoice([2, 3, 4]);
+    const s = [start];
+    let d = d1;
+
+    for (let i = 0; i < 6; i++) {
+      s.push(s[s.length - 1] + d);
+      d += dd;
+    }
+
+    return {
+      series: s,
+      pattern: {
+        approach: "Use the difference-of-differences method.",
+        shortcut: `The second difference is constant at ${dd}.`,
+        steps: ["Find the first differences.", `Their differences remain +${dd}.`, "Continue the first-difference sequence."],
+        quickMethods: ["Write two rows of differences mentally.", "Look for a constant second difference.", "Verify across several terms."]
+      }
+    };
+  },
+
+  _seriesConsecutiveProduct() {
+    const start = this.getRandomInt(2, 8);
+    const add = this.getRandomInt(1, 5);
+    const s = [start];
+
+    for (let i = 1; i <= 6; i++) {
+      s.push(s[s.length - 1] + (i * (i + add)));
+    }
+
+    return {
+      series: s,
+      pattern: {
+        approach: "Check whether the differences themselves are products of consecutive or near-consecutive integers.",
+        shortcut: `Differences follow i × (i + ${add}).`,
+        steps: ["Find consecutive differences.", `Match them to products with a fixed gap of ${add}.`, "Continue the product-difference pattern."],
+        quickMethods: ["Inspect differences first.", "Look for n(n+k).", "Avoid guessing from the raw terms."]
+      }
+    };
+  },
+
+  _fallbackSeries(isWrong) {
+    const series = [12, 18, 26, 36, 48, 62, 78];
+    if (!isWrong) {
+      series[3] = "?";
+      return this.package(
+        "Missing Number Series",
+        `Find the missing term: ${series.join(", ")}`,
+        36,
+        "Use the increasing difference pattern.",
+        "Differences are +6, +8, +10, +12, +14, +16.",
+        "The differences increase by 2.",
+        ["Find the differences.", "Continue the +2 increase in differences.", "Missing term = 36."],
+        ["Check differences first.", "Look for a constant second difference."]
+      );
+    }
+
+    series[3] = 35;
+    return this.package(
+      "Wrong Number Series",
+      `Find the wrong term: ${series.join(", ")}`,
+      35,
+      "The displayed term 35 breaks the increasing-difference pattern.",
+      "Check the differences: they should increase by 2.",
+      "Use the difference row to identify the broken transition.",
+      ["Expected sequence has +6, +8, +10, +12...", "The displayed 35 breaks that rule.", "Wrong term = 35."],
+      ["Use differences.", "Check the pattern across all terms."]
+    );
+  }
+};
+
+
+// ==================================================
+// PR CLERK 2026 - MODERATE GENERATOR INTEGRATION
+// ==================================================
+
+function moderateIntegratedOptions(ans, extra=[]) {
+  const out = [];
+  const add = v => {
+    const s = String(v);
+    if (s !== String(ans) && !out.includes(s)) out.push(s);
+  };
+
+  if (String(ans).includes("/")) {
+    const s = String(ans);
+    const parts = s.split(" ");
+    if (parts.length === 2) {
+      const whole = Number(parts[0]);
+      const f = parts[1].split("/");
+      const num = Number(f[0]), den = Number(f[1]);
+      if (Number.isFinite(whole) && Number.isFinite(num) && Number.isFinite(den)) {
+        add(`${whole + 1} ${num}/${den}`);
+        add(`${Math.max(0, whole - 1)} ${num}/${den}`);
+        add(`${whole} ${Math.max(1, num + 1)}/${den}`);
+        add(`${whole} ${Math.max(1, num)}/${den + 1}`);
+      }
+    }
+    extra.forEach(add);
+    while (out.length < 3) add(`0/${out.length + 2}`);
+    return [String(ans), ...out.slice(0, 3)].sort(() => Math.random() - 0.5);
+  }
+
+  const n = Number(ans);
+  if (Number.isFinite(n)) {
+    extra.forEach(add);
+    const candidates = [
+      n - 1, n + 1, n - 2, n + 2, n - 5, n + 5,
+      n - 10, n + 10, n * 0.9, n * 1.1
+    ];
+    candidates.forEach(add);
+    while (out.length < 3) add(n + out.length + 1);
+  } else {
+    extra.forEach(add);
+    while (out.length < 3) add(`Option ${out.length + 1}`);
+  }
+  return [String(ans), ...out.slice(0, 3)].sort(() => Math.random() - 0.5);
+}
+
+function moderateIntegrated(result) {
+  if (!result) return null;
+  const z = {
+    expr: String(result.question || result.expr || ""),
+    ans: String(result.answer ?? result.ans ?? ""),
+    exp: result.coach?.steps?.join(" ") || "",
+    skill: String(result.type || result.skill || "Moderate"),
+    diff: "Moderate",
+    options: null
+  };
+
+  const c = result.coach || {};
+  z.coach = {
+    highlight: c.highlight || result.highlight || "Recognise the calculation pattern before starting.",
+    approach: c.approach || "Use the shortest pattern-based route.",
+    shortcut: c.shortcut || "Look for cancellation, friendly numbers and familiar percentage/fraction equivalents.",
+    quickMethods: c.quickMethods || [],
+    steps: c.steps || [z.exp, `Final answer: ${z.ans}.`]
+  };
+
+  z.options = moderateIntegratedOptions(z.ans);
+  return z;
+}
+
+// Replace the old Moderate generators without touching Easy.
+function moderateSimplification() {
+  return moderateIntegrated(ModerateGenerator.generateSimplification());
+}
+
+function moderateApproximation() {
+  return moderateIntegrated(ModerateGenerator.generateApproximation());
+}
+
+function moderateSeries() {
+  return moderateIntegrated(ModerateGenerator.generateNumberSeries(Math.random() < 0.5));
+}
+
