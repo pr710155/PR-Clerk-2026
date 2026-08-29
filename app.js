@@ -176,48 +176,17 @@ function moderateSeries(){
  let a=R(3,10),b=R(2,6);seq=[a];for(let i=1;i<6;i++)seq.push(seq[i-1]+b*i*i);let idx=R(1,4),correct=seq[idx];seq[idx]=correct+P([-6,-3,3,6]);expr=`Find the wrong number: ${seq.join(", ")}`;return mk(expr,seq[idx],"Wrong term in square-difference series",`The differences should be ${b}×1², ${b}×2², ${b}×3²... The displayed value ${seq[idx]} breaks that rule; intended value is ${correct}.`,[correct,seq[idx]-3,seq[idx]+3]);
 }
 
-function moderateArithmetic(){
- const type=R(1,14); let p,q,r,s,x,exp,more;
- if(type===1){p=R(240,960);q=P([12.5,16.6667,20,25,33.3333,37.5,62.5,75]);x=p*q/100;return mcq(`${q}% of ${p} = ?`,dec(x,2),`Convert the percentage to a familiar fraction where possible, then calculate.`,`Arithmetic`,[dec(x+6,2),dec(x-6,2),dec(x+12,2)])}
- if(type===2){p=R(18,48);q=R(12,36);let total=p+q,x=R(400,1200);let first=x*p/total;return mcq(`₹${x} is divided in the ratio ${p}:${q}. What is the first share?`,first,`Total parts=${total}; first share = ${x}×${p}/${total} = ${first}.`,`Arithmetic`,[first+20,first-20,first+40])}
- if(type===3){p=R(6,14);q=R(2,6);r=R(4,10);let avg=(p+q+r)*10/3;return mcq(`The average of ${p*10}, ${q*10} and ${r*10} is ?`,avg,`Add the three values and divide by 3.`,`Arithmetic`,[avg+5,avg-5,avg+10])}
- if(type===4){p=R(800,2500);q=R(5,15);r=R(1,3);x=p*q*r/100;return mcq(`Simple interest on ₹${p} at ${q}% p.a. for ${r} year${r>1?'s':''} = ?`,x,`SI = P×R×T/100 = ${p}×${q}×${r}/100 = ${x}.`,`Arithmetic`,[x+50,x-50,x+100])}
- if(type===5){p=R(400,1500);q=R(10,30);r=R(5,20);let sp=p*(100+q)/100*(100-r)/100;return mcq(`An item marked ₹${p} is increased by ${q}% and then decreased by ${r}%. Final value?`,dec(sp,2),`Apply the two successive percentage changes multiplicatively: ${p}×${100+q}/100×${100-r}/100.`,`Arithmetic`,[dec(sp+20,2),dec(sp-20,2),dec(sp+40,2)])}
- if(type===6){p=R(6,18);q=R(4,12);let work=p*q,r=R(2,8),x=work/r;return mcq(`${p} workers complete a job in ${q} days. At the same rate, how many days will ${r} workers take?`,x,`Total work = ${p}×${q} worker-days. Divide by ${r}.`,`Arithmetic`,[x+1,x-1,x+2])}
- if(type===7){p=R(30,80);q=R(2,6);let dist=p*q;return mcq(`A train travels at ${p} km/h for ${q} hours. Distance covered?`,dist,`Distance = speed × time = ${p}×${q} = ${dist} km.`,`Arithmetic`,[dist+10,dist-10,dist+20])}
- if(type===8){p=R(20,60);q=R(10,40);let total=p+q,x=R(200,800);let first=x*p/total;return mcq(`Two numbers are in the ratio ${p}:${q} and their sum is ${x}. The larger number is ?`,Math.max(first,x-first),`One part = ${x}/${total}; multiply by the larger ratio part.`,`Arithmetic`,[Math.min(first,x-first),Math.max(first,x-first)+10,Math.max(first,x-first)-10])}
- if(type===9){p=R(12,40);q=R(4,12);let x=p*q;return mcq(`A can complete a work in ${p} days and B in ${q} days. How much work do they complete together in 1 day?`,dec(1/p+1/q,4),`Combined one-day work = 1/${p} + 1/${q}.`,`Arithmetic`,[dec(1/p+1/q+.01,4),dec(1/p+1/q-.01,4),dec(1/p+1/q+.02,4)])}
- if(type===10){p=R(4,10);q=R(2,8);r=R(2,6);let x=p*q*r;return mcq(`${p} men, working ${q} hours a day, finish a job in ${r} days. Total man-hours?`,x,`Men × hours/day × days = ${p}×${q}×${r} = ${x}.`,`Arithmetic`,[x+10,x-10,x+20])}
- if(type===11){p=R(100,300);q=R(10,30);r=R(5,20);let x=p*(100+q)/100;let final=x*(100-r)/100;return mcq(`A value ₹${p} rises by ${q}% and then falls by ${r}%. What is the final value?`,dec(final,2),`Apply the changes successively, not by simply adding percentages.`,`Arithmetic`,[dec(final+10,2),dec(final-10,2),dec(final+20,2)])}
- if(type===12){p=R(600,1800);q=R(10,25);let discount=p*q/100,sp=p-discount;return mcq(`An article marked ₹${p} is sold at ${q}% discount. Selling price?`,sp,`Discount = ${q}% of ${p}; subtract it from marked price.`,`Arithmetic`,[sp+20,sp-20,sp+40])}
- if(type===13){p=R(4,12);q=R(3,10);let x=p*q;return mcq(`A boat's downstream speed is ${x} km/h and upstream speed is ${p} km/h. Speed in still water?`,(x+p)/2,`Still-water speed = (downstream + upstream)/2.`,`Arithmetic`,[(x+p)/2+1,(x+p)/2-1,(x-p)/2])}
- p=R(20,80);q=R(10,30);r=R(100,500);x=r*(p+q)/100;return mcq(`A population of ${r} increases by ${p}% and then decreases by ${q}%. Approximate net change?`,dec(r*((100+p)*(100-q)/10000-1),2),`Apply successive percentage multipliers: (100+${p})(100−${q})/10000.`,`Arithmetic`,[dec(x,2),dec(-x,2),dec(x/2,2)])
-}
-function moderateDI(){
- const type=R(1,6); let rows,headers,question,ans,exp,more,title;
- if(type<=3){
-  const months=["Jan","Feb","Mar","Apr"]; const cats=["A","B","C"]; rows=cats.map(c=>[c,...months.map(()=>R(80,420))]); headers=months;
-  if(type===1){let col=R(1,4),vals=rows.map(r=>r[col]);ans=vals[0]+vals[1]+vals[2];question=`Total units sold by A, B and C in ${months[col-1]} = ?`;exp=`Read the ${months[col-1]} column and add ${vals.join(" + ")} = ${ans}.`;more=[ans+20,ans-20,ans+40]}
-  else if(type===2){let col1=R(1,4),col2=R(1,4);while(col2===col1)col2=R(1,4);let a=rows[0][col1],b=rows[0][col2];ans=a-b;question=`For A, the difference between ${months[col1-1]} and ${months[col2-1]} = ?`;exp=`${a} − ${b} = ${ans}.`;more=[ans+10,ans-10,ans+20]}
-  else {let col=R(1,4),vals=rows.map(r=>r[col]);ans=Math.max(...vals)-Math.min(...vals);question=`In ${months[col-1]}, what is the difference between the highest and lowest value?`;exp=`Highest ${Math.max(...vals)} − lowest ${Math.min(...vals)} = ${ans}.`;more=[ans+10,ans-10,ans+20]}
-  const table=`${headers.join(" | ")}\n${rows.map(r=>r.join(" | ")).join("\n")}`;return mcq(`Table:\n${table}\n\n${question}`,ans,exp,"Data Interpretation",more)
- }
- if(type===4){let base=R(80,180),a=base+R(20,80),b=base-R(10,50),c=base+R(40,120),d=base-R(20,40);let vals=[a,b,c,d],ans=c-a;question=`A bar graph gives values ${vals.join(", ")} for four categories. Difference between the highest and second-highest = ?`;exp=`Highest = ${c}; second-highest = ${a}; difference = ${ans}.`;return mcq(`Bar Graph values: ${vals.join(", ")}\n\n${question}`,ans,exp,"Data Interpretation",[ans+10,ans-10,ans+20])}
- if(type===5){let total=R(600,1500),p=R(15,35),q=R(10,25);let a=total*p/100,b=total*q/100,ans=a-b;return mcq(`Caselet: Out of ${total} candidates, ${p}% are from group A and ${q}% from group B. Difference between the two groups = ?`,ans,`A = ${total}×${p}/100 = ${a}; B = ${total}×${q}/100 = ${b}; difference = ${ans}.`,`Data Interpretation`,[ans+20,ans-20,ans+40])}
- let x=R(120,300),y=R(80,220),z=R(100,260);ans=x+y-z;return mcq(`Caselet: A store sold ${x} units on Monday, ${y} on Tuesday and ${z} on Wednesday. How many more units were sold on Monday+Tuesday than Wednesday?`,ans,`${x}+${y}−${z} = ${ans}.`,`Data Interpretation`,[ans+10,ans-10,ans+20])
-}
-
 function moderateSimplification(){
  const type=R(1,24); let a,b,c,d,e,x,exp,more;
  const ret=(expr,ans,ex,extra=[])=>mcq(expr,ans,ex,"Simplification",extra);
- if(type===1){b=R(3,9);c=R(4,12);d=R(2,8);let e=R(2,6);a=R(40,120);let div=a%e===0?a:a+(e-a%e);a=div;x=a+b*c-d/e;return ret(`${a} + ${b} × ${c} − ${d*1}/${e} = ?`,x,`Apply BODMAS: ${b}×${c}=${b*c} and ${d}/${e}=${d/e}; then combine the terms to get ${x}.`,[x-2,x+2,x+4])}
+ if(type===1){b=R(3,9);c=R(4,12);let e=R(2,6),k=R(1,4);d=e*k;a=R(40,120);x=a+b*c-k;return ret(`${a} + ${b} × ${c} − ${d}/${e} = ?`,x,`Apply BODMAS: ${b}×${c}=${b*c} and ${d}/${e}=${k}; then combine the terms to get ${x}.`,[x-2,x+2,x+4])}
  if(type===2){a=R(25,90);b=R(12,30);c=R(2,9);d=P([10,20,25,50]);let e=R(2,8);x=a+b*c-d/e;return ret(`${a} + ${b} × ${c} − ${d}/${e} = ?`,dec(x,2),`Multiply and divide before the final addition/subtraction: ${b}×${c}=${b*c}, ${d}÷${e}=${dec(d/e,2)}.`,[dec(x-2,2),dec(x+2,2),dec(x+5,2)])}
- if(type===3){let f=P([[1,2],[1,3],[1,4],[2,3],[3,4],[2,5],[3,5],[5,8]]);b=R(80,480);x=f[0]*b/f[1];return ret(`${f[0]}/${f[1]} of ${b} = ?`,x,`Use the fraction directly: divide ${b} by ${f[1]} and multiply by ${f[0]}.`,[x+5,x-5,x+10])}
- if(type===4){let f=P([[3,4],[5,6],[7,8],[5,8],[7,10],[9,10]]);b=R(120,600);c=P([10,20,25,50]);x=f[0]*b/f[1]+c;return ret(`${f[0]}/${f[1]} of ${b} + ${c} = ?`,x,`Find the fractional part first, then add ${c}; result = ${x}.`,[x-5,x+5,x+10])}
+ if(type===3){let f=P([[1,2],[1,3],[1,4],[2,3],[3,4],[2,5],[3,5],[5,8]]);b=R(80,480);x=dec(f[0]*b/f[1],2);return ret(`${f[0]}/${f[1]} of ${b} = ?`,x,`Use the fraction directly: divide ${b} by ${f[1]} and multiply by ${f[0]}.`,[dec(x+5,2),dec(x-5,2),dec(x+10,2)])}
+ if(type===4){let f=P([[3,4],[5,6],[7,8],[5,8],[7,10],[9,10]]);b=R(120,600);c=P([10,20,25,50]);x=dec(f[0]*b/f[1]+c,2);return ret(`${f[0]}/${f[1]} of ${b} + ${c} = ?`,x,`Find the fractional part first, then add ${c}; result = ${x}.`,[dec(x-5,2),dec(x+5,2),dec(x+10,2)])}
  if(type===5){b=R(4,12);let q=R(20,80),a=b*q;c=R(2,9);d=P([5,10,20,25]);e=R(2,8);x=a/b+c*d-e;return ret(`${a} ÷ ${b} + ${c} × ${d} − ${e} = ?`,x,`Divide ${a} by ${b}, multiply ${c}×${d}, then subtract ${e}; result = ${x}.`,[x-2,x+2,x+5])}
  if(type===6){b=R(3,9);c=R(2,8);d=R(2,8);e=R(2,6);let q=R(5,20),a=q*e+b*c; x=a-b*c+q;return ret(`${a} − ${b} × ${c} + ${q} = ?`,x,`Multiply first: ${b}×${c}=${b*c}; then ${a}−${b*c}+${q}=${x}.`,[x-2,x+2,x+4])}
  if(type===7){a=R(15,60);b=R(15,60);c=P([5,10,20,25,50]);x=(a+b)*c;return ret(`(${a} + ${b}) × ${c} = ?`,x,`Add inside the bracket, then use the friendly multiplier ${c}; result = ${x}.`,[x-10,x+10,x+20])}
- if(type===8){a=R(20,80);b=R(20,80);c=P([5,10,20,25,50]);x=(a+b)/c;return ret(`(${a} + ${b}) ÷ ${c} = ?`,x,`Add first: ${a+b}; then divide by ${c}.`,[x-2,x+2,x+5])}
+ if(type===8){a=R(20,80);b=R(20,80);c=P([5,10,20,25,50]);x=dec((a+b)/c,2);return ret(`(${a} + ${b}) ÷ ${c} = ?`,x,`Add first: ${a+b}; then divide by ${c}.`,[dec(x-2,2),dec(x+2,2),dec(x+5,2)])}
  if(type===9){a=R(30,90);b=R(2,9);c=R(2,9);x=a*(b+c);return ret(`${a} × (${b} + ${c}) = ?`,x,`Add the bracket first (${b+c}), then multiply ${a}×${b+c}=${x}.`,[x-b,x+b,x+10])}
  if(type===10){a=R(200,900);b=P([12.5,16.6667,20,25,33.3333,37.5,62.5,75]);c=P([10,20,25,50]);x=a*b/100+c;return ret(`${b}% of ${a} + ${c} = ?`,dec(x,2),`Convert ${b}% to a familiar fraction, calculate the percentage part, then add ${c}.`,[dec(x-5,2),dec(x+5,2),dec(x+10,2)])}
  if(type===11){a=R(200,900);b=P([12.5,16.6667,20,25,33.3333,37.5,62.5,75]);c=P([5,10,20,25]);x=a*b/100-c;return ret(`${b}% of ${a} − ${c} = ?`,dec(x,2),`Calculate the familiar percentage first, then subtract ${c}.`,[dec(x-5,2),dec(x+5,2),dec(x+10,2)])}
@@ -225,22 +194,22 @@ function moderateSimplification(){
  if(type===13){a=P([36,49,64,81,100,121,144,169,196,225,256,289,324,361,400,441,484,529,576,625,676,729,784,841,900]);b=R(10,80);x=Math.sqrt(a)+b;return ret(`√${a} + ${b} = ?`,x,`Recognise √${a}=${Math.sqrt(a)}, then add ${b}.`,[x-2,x+2,x+5])}
  if(type===14){a=P([36,49,64,81,100,121,144,169,196,225,256,289,324,361,400]);b=P([4,9,16,25,36,49]);x=Math.sqrt(a)*Math.sqrt(b);return ret(`√${a} × √${b} = ?`,x,`Recognise both roots: ${Math.sqrt(a)}×${Math.sqrt(b)}=${x}.`,[x-2,x+2,x+4])}
  if(type===15){a=R(12,35);b=R(12,35);c=P([5,10,20,25,50]);d=P([2,4,5,8,10]);x=(a+b)*c/d;return ret(`(${a} + ${b}) × ${c} ÷ ${d} = ?`,dec(x,2),`Combine the bracket, then use cancellation before multiplying/dividing; result = ${dec(x,2)}.`,[dec(x-2,2),dec(x+2,2),dec(x+5,2)])}
- if(type===16){a=R(100,600);b=P([25,50,75]);c=P([4,8,16]);x=a*b/100*c;return ret(`${b}% of ${a} × ${c} = ?`,x,`Use ${b}% as a fraction first, then multiply by ${c}; result = ${x}.`,[x-10,x+10,x+20])}
+ if(type===16){a=R(100,600);b=P([25,50,75]);c=P([4,8,16]);x=dec(a*b/100*c,2);return ret(`${b}% of ${a} × ${c} = ?`,x,`Use ${b}% as a fraction first, then multiply by ${c}; result = ${x}.`,[dec(x-10,2),dec(x+10,2),dec(x+20,2)])}
  if(type===17){a=R(20,90);b=P([9,11,19,21,25,50,99,101,125]);x=a*b;return ret(`${a} × ${b} = ?`,x,`Use the friendly-factor shortcut for ×${b}; avoid long multiplication.`,[x-10,x+10,x+20])}
- if(type===18){a=R(200,900);b=P([5,25,50,125]);x=a/b;return ret(`${a} ÷ ${b} = ?`,x,`Use the matching division shortcut for ÷${b} rather than long division.`,[x-5,x+5,x+10])}
+ if(type===18){a=R(200,900);b=P([5,25,50,125]);x=dec(a/b,2);return ret(`${a} ÷ ${b} = ?`,x,`Use the matching division shortcut for ÷${b} rather than long division.`,[dec(x-5,2),dec(x+5,2),dec(x+10,2)])}
  if(type===19){a=R(100,900);b=P([9,11,19,21,99,101]);c=R(10,80);x=a*b+c;return ret(`${a} × ${b} + ${c} = ?`,x,`Use the near-10/near-100 multiplication identity first, then add ${c}.`,[x-10,x+10,x+20])}
  if(type===20){a=R(100,900);b=P([9,11,19,21,99,101]);c=R(10,80);x=a*b-c;return ret(`${a} × ${b} − ${c} = ?`,x,`Use the multiplication shortcut for ×${b}, then subtract ${c}.`,[x-10,x+10,x+20])}
- if(type===21){a=R(20,80);b=P([25,50,75]);c=R(20,80);d=P([5,10,20,25,50]);x=a+b*c/100-d;return ret(`${a} + ${b}% of ${c} − ${d} = ?`,x,`Find the percentage part first (${b}% of ${c}), then add/subtract the remaining terms.`,[x-2,x+2,x+5])}
+ if(type===21){a=R(20,80);b=P([25,50,75]);c=R(20,80);d=P([5,10,20,25,50]);x=dec(a+b*c/100-d,2);return ret(`${a} + ${b}% of ${c} − ${d} = ?`,x,`Find the percentage part first (${b}% of ${c}), then add/subtract the remaining terms.`,[dec(x-2,2),dec(x+2,2),dec(x+5,2)])}
  if(type===22){a=R(10,60);b=R(10,60);c=R(2,8);d=R(2,8);x=(a+b*c)/d;return ret(`(${a} + ${b} × ${c}) ÷ ${d} = ?`,dec(x,2),`Inside the bracket multiply first, add, then divide by ${d}.`,[dec(x-1,2),dec(x+1,2),dec(x+2,2)])}
  if(type===23){let f1=P([[1,2],[2,3],[3,4],[3,5],[5,6]]),f2=P([[1,2],[2,5],[3,4],[4,5]]);a=R(60,360);x=a*f1[0]/f1[1]*f2[0]/f2[1];return ret(`${f1[0]}/${f1[1]} × ${a} × ${f2[0]}/${f2[1]} = ?`,dec(x,2),`Cancel common factors before multiplying the remaining numerators and denominators.`,[dec(x-5,2),dec(x+5,2),dec(x+10,2)])}
- a=R(100,900);b=P([10,20,25,50]);c=P([2,4,5,10]);d=P([5,10,20,25]);x=a*b/100+c*d;return ret(`${b}% of ${a} + ${c} × ${d} = ?`,x,`Calculate the percentage part and multiplication separately, then combine them.`,[x-10,x+10,x+20]);
+ a=R(100,900);b=P([10,20,25,50]);c=P([2,4,5,10]);d=P([5,10,20,25]);x=dec(a*b/100+c*d,2);return ret(`${b}% of ${a} + ${c} × ${d} = ?`,x,`Calculate the percentage part and multiplication separately, then combine them.`,[dec(x-10,2),dec(x+10,2),dec(x+20,2)]);
 }
 
 function moderateApproximation(){
  const type=R(1,16); let a,b,c,d,x;
  const ret=(expr,ans,ex,extra=[])=>mcq(expr,ans,ex,"Approximation",extra);
  if(type===1){a=R(180,980)/10;b=R(20,98)/10;x=Math.round(a)*Math.round(b);return ret(`${a.toFixed(1)} × ${b.toFixed(1)} ≈ ?`,x,`Round ${a.toFixed(1)} and ${b.toFixed(1)} to nearby convenient values, then multiply.`,[x-10,x+10,x+20])}
- if(type===2){a=R(300,990)/10;b=R(20,98)/10;let ra=Math.round(a/10)*10,rb=Math.round(b/10)*10;x=Math.round(ra/rb);return ret(`${a.toFixed(1)} ÷ ${b.toFixed(1)} ≈ ?`,x,`Round to ${ra} and ${rb}; ${ra}÷${rb}≈${x}.`,[x-1,x+1,x+2])}
+ if(type===2){a=R(300,990)/10;b=R(20,98)/10;let ra=Math.round(a/10)*10,rb=Math.max(1,Math.round(b));x=Math.round(ra/rb);return ret(`${a.toFixed(1)} ÷ ${b.toFixed(1)} ≈ ?`,x,`Round to ${ra} and ${rb}; ${ra}÷${rb}≈${x}.`,[x-1,x+1,x+2])}
  if(type===3){a=R(180,980);b=R(80,480);c=R(80,480);x=Math.round(a/100)*100+Math.round(b/10)*10-Math.round(c/10)*10;return ret(`${a} + ${b} − ${c} ≈ ?`,x,`Round each term sensibly: ${Math.round(a/100)*100} + ${Math.round(b/10)*10} − ${Math.round(c/10)*10}.`,[x-20,x+20,x+40])}
  if(type===4){a=R(180,980);b=P([12.5,16.67,20,25,33.33,37.5,62.5,66.67,75]);x=Math.round(a*b/100);return ret(`${b}% of ${a} ≈ ?`,x,`Use the familiar fraction behind ${b}% and estimate to the nearest practical value.`,[x-10,x+10,x+20])}
  if(type===5){a=R(400,980);b=R(20,90);c=R(10,80);x=Math.round(a/b)+c;return ret(`${a} ÷ ${b} + ${c} ≈ ?`,x,`Round the quotient using nearby convenient multiples, then add ${c}.`,[x-2,x+2,x+5])}
@@ -257,77 +226,12 @@ function moderateApproximation(){
  a=R(100,900);b=R(10,40);c=R(10,40);d=R(10,40);x=Math.round(a*(100+b)/100)-d;return ret(`${a} × (1 + ${b}%) − ${d} ≈ ?`,x,`Estimate the percentage increase first, then subtract ${d}.`,[x-10,x+10,x+20]);
 }
 
-function moderateArithmetic(){
- const type=R(1,14); let p,q,r,s,x,exp,more;
- if(type===1){p=R(240,960);q=P([12.5,16.6667,20,25,33.3333,37.5,62.5,75]);x=p*q/100;return mcq(`${q}% of ${p} = ?`,dec(x,2),`Convert the percentage to a familiar fraction where possible, then calculate.`,`Arithmetic`,[dec(x+6,2),dec(x-6,2),dec(x+12,2)])}
- if(type===2){p=R(18,48);q=R(12,36);let total=p+q,x=R(400,1200);let first=x*p/total;return mcq(`₹${x} is divided in the ratio ${p}:${q}. What is the first share?`,first,`Total parts=${total}; first share = ${x}×${p}/${total} = ${first}.`,`Arithmetic`,[first+20,first-20,first+40])}
- if(type===3){p=R(6,14);q=R(2,6);r=R(4,10);let avg=(p+q+r)*10/3;return mcq(`The average of ${p*10}, ${q*10} and ${r*10} is ?`,avg,`Add the three values and divide by 3.`,`Arithmetic`,[avg+5,avg-5,avg+10])}
- if(type===4){p=R(800,2500);q=R(5,15);r=R(1,3);x=p*q*r/100;return mcq(`Simple interest on ₹${p} at ${q}% p.a. for ${r} year${r>1?'s':''} = ?`,x,`SI = P×R×T/100 = ${p}×${q}×${r}/100 = ${x}.`,`Arithmetic`,[x+50,x-50,x+100])}
- if(type===5){p=R(400,1500);q=R(10,30);r=R(5,20);let sp=p*(100+q)/100*(100-r)/100;return mcq(`An item marked ₹${p} is increased by ${q}% and then decreased by ${r}%. Final value?`,dec(sp,2),`Apply the two successive percentage changes multiplicatively: ${p}×${100+q}/100×${100-r}/100.`,`Arithmetic`,[dec(sp+20,2),dec(sp-20,2),dec(sp+40,2)])}
- if(type===6){p=R(6,18);q=R(4,12);let work=p*q,r=R(2,8),x=work/r;return mcq(`${p} workers complete a job in ${q} days. At the same rate, how many days will ${r} workers take?`,x,`Total work = ${p}×${q} worker-days. Divide by ${r}.`,`Arithmetic`,[x+1,x-1,x+2])}
- if(type===7){p=R(30,80);q=R(2,6);let dist=p*q;return mcq(`A train travels at ${p} km/h for ${q} hours. Distance covered?`,dist,`Distance = speed × time = ${p}×${q} = ${dist} km.`,`Arithmetic`,[dist+10,dist-10,dist+20])}
- if(type===8){p=R(20,60);q=R(10,40);let total=p+q,x=R(200,800);let first=x*p/total;return mcq(`Two numbers are in the ratio ${p}:${q} and their sum is ${x}. The larger number is ?`,Math.max(first,x-first),`One part = ${x}/${total}; multiply by the larger ratio part.`,`Arithmetic`,[Math.min(first,x-first),Math.max(first,x-first)+10,Math.max(first,x-first)-10])}
- if(type===9){p=R(12,40);q=R(4,12);let x=p*q;return mcq(`A can complete a work in ${p} days and B in ${q} days. How much work do they complete together in 1 day?`,dec(1/p+1/q,4),`Combined one-day work = 1/${p} + 1/${q}.`,`Arithmetic`,[dec(1/p+1/q+.01,4),dec(1/p+1/q-.01,4),dec(1/p+1/q+.02,4)])}
- if(type===10){p=R(4,10);q=R(2,8);r=R(2,6);let x=p*q*r;return mcq(`${p} men, working ${q} hours a day, finish a job in ${r} days. Total man-hours?`,x,`Men × hours/day × days = ${p}×${q}×${r} = ${x}.`,`Arithmetic`,[x+10,x-10,x+20])}
- if(type===11){p=R(100,300);q=R(10,30);r=R(5,20);let x=p*(100+q)/100;let final=x*(100-r)/100;return mcq(`A value ₹${p} rises by ${q}% and then falls by ${r}%. What is the final value?`,dec(final,2),`Apply the changes successively, not by simply adding percentages.`,`Arithmetic`,[dec(final+10,2),dec(final-10,2),dec(final+20,2)])}
- if(type===12){p=R(600,1800);q=R(10,25);let discount=p*q/100,sp=p-discount;return mcq(`An article marked ₹${p} is sold at ${q}% discount. Selling price?`,sp,`Discount = ${q}% of ${p}; subtract it from marked price.`,`Arithmetic`,[sp+20,sp-20,sp+40])}
- if(type===13){p=R(4,12);q=R(3,10);let x=p*q;return mcq(`A boat's downstream speed is ${x} km/h and upstream speed is ${p} km/h. Speed in still water?`,(x+p)/2,`Still-water speed = (downstream + upstream)/2.`,`Arithmetic`,[(x+p)/2+1,(x+p)/2-1,(x-p)/2])}
- p=R(20,80);q=R(10,30);r=R(100,500);x=r*(p+q)/100;return mcq(`A population of ${r} increases by ${p}% and then decreases by ${q}%. Approximate net change?`,dec(r*((100+p)*(100-q)/10000-1),2),`Apply successive percentage multipliers: (100+${p})(100−${q})/10000.`,`Arithmetic`,[dec(x,2),dec(-x,2),dec(x/2,2)])
-}
-function moderateDI(){
- const type=R(1,6); let rows,headers,question,ans,exp,more,title;
- if(type<=3){
-  const months=["Jan","Feb","Mar","Apr"]; const cats=["A","B","C"]; rows=cats.map(c=>[c,...months.map(()=>R(80,420))]); headers=months;
-  if(type===1){let col=R(1,4),vals=rows.map(r=>r[col]);ans=vals[0]+vals[1]+vals[2];question=`Total units sold by A, B and C in ${months[col-1]} = ?`;exp=`Read the ${months[col-1]} column and add ${vals.join(" + ")} = ${ans}.`;more=[ans+20,ans-20,ans+40]}
-  else if(type===2){let col1=R(1,4),col2=R(1,4);while(col2===col1)col2=R(1,4);let a=rows[0][col1],b=rows[0][col2];ans=a-b;question=`For A, the difference between ${months[col1-1]} and ${months[col2-1]} = ?`;exp=`${a} − ${b} = ${ans}.`;more=[ans+10,ans-10,ans+20]}
-  else {let col=R(1,4),vals=rows.map(r=>r[col]);ans=Math.max(...vals)-Math.min(...vals);question=`In ${months[col-1]}, what is the difference between the highest and lowest value?`;exp=`Highest ${Math.max(...vals)} − lowest ${Math.min(...vals)} = ${ans}.`;more=[ans+10,ans-10,ans+20]}
-  const table=`${headers.join(" | ")}\n${rows.map(r=>r.join(" | ")).join("\n")}`;return mcq(`Table:\n${table}\n\n${question}`,ans,exp,"Data Interpretation",more)
- }
- if(type===4){let base=R(80,180),a=base+R(20,80),b=base-R(10,50),c=base+R(40,120),d=base-R(20,40);let vals=[a,b,c,d],ans=c-a;question=`A bar graph gives values ${vals.join(", ")} for four categories. Difference between the highest and second-highest = ?`;exp=`Highest = ${c}; second-highest = ${a}; difference = ${ans}.`;return mcq(`Bar Graph values: ${vals.join(", ")}\n\n${question}`,ans,exp,"Data Interpretation",[ans+10,ans-10,ans+20])}
- if(type===5){let total=R(600,1500),p=R(15,35),q=R(10,25);let a=total*p/100,b=total*q/100,ans=a-b;return mcq(`Caselet: Out of ${total} candidates, ${p}% are from group A and ${q}% from group B. Difference between the two groups = ?`,ans,`A = ${total}×${p}/100 = ${a}; B = ${total}×${q}/100 = ${b}; difference = ${ans}.`,`Data Interpretation`,[ans+20,ans-20,ans+40])}
- let x=R(120,300),y=R(80,220),z=R(100,260);ans=x+y-z;return mcq(`Caselet: A store sold ${x} units on Monday, ${y} on Tuesday and ${z} on Wednesday. How many more units were sold on Monday+Tuesday than Wednesday?`,ans,`${x}+${y}−${z} = ${ans}.`,`Data Interpretation`,[ans+10,ans-10,ans+20])
-}
-
-function moderateSimplification(){
- const type=R(1,14); let a,b,c,d,x;
- if(type===1){a=R(12,48);b=R(2,9);c=R(2,8);x=a+b*c;return mcq(`${a} + ${b} × ${c} − ${R(2,9)} = ?`,x-R(2,9),`Apply BODMAS: multiply first, then add/subtract.`,`Simplification`,[x+1,x-1,x+2])}
- if(type===2){a=P([[1,2],[1,4],[3,4],[2,5],[3,5],[5,8],[7,8],[2,3]]);b=R(80,400);x=a[0]*b/a[1];return mcq(`${a[0]}/${a[1]} × ${b} = ?`,x,`Cancel/divide first wherever possible, then multiply.`,`Simplification`,[x+5,x-5,x+10])}
- if(type===3){a=P([12.5,16.6667,20,25,33.3333,37.5,62.5,75]);b=R(80,400);x=b*a/100;return mcq(`${a}% of ${b} = ?`,dec(x,2),`Convert the percentage into a familiar fraction and calculate.`,`Simplification`,[dec(x+5,2),dec(x-5,2),dec(x+10,2)])}
- if(type===4){a=R(12,60);b=R(2,9);c=R(2,9);x=a/b+c;return mcq(`${a} ÷ ${b} + ${c} = ?`,dec(x,2),`Perform division first, then addition.`,`Simplification`,[dec(x+1,2),dec(x-1,2),dec(x+2,2)])}
- if(type===5){a=P([36,49,64,81,100,121,144,169,196,225]);b=P([4,9,16,25,36]);x=Math.sqrt(a)+Math.sqrt(b);return mcq(`√${a} + √${b} = ?`,x,`Recognise both perfect squares: ${Math.sqrt(a)} + ${Math.sqrt(b)} = ${x}.`,`Simplification`,[x+1,x-1,x+2])}
- if(type===6){a=R(12,60);b=P([5,10,20,25,50]);x=a*b/100;return mcq(`${b}% of ${a*10} = ?`,x*10,`Use the familiar percentage fraction before multiplying.`,`Simplification`,[x*10+5,x*10-5,x*10+10])}
- if(type===7){a=R(10,40);b=R(10,40);c=R(2,8);x=(a+b)*c;return mcq(`(${a} + ${b}) × ${c} = ?`,x,`Combine the bracket first, then multiply.`,`Simplification`,[x+c,x-c,x+10])}
- if(type===8){a=R(20,90);b=R(2,9);c=R(2,9);x=a-(b*c);return mcq(`${a} − ${b} × ${c} = ?`,x,`Multiplication comes before subtraction.`,`Simplification`,[x+1,x-1,x+2])}
- if(type===9){a=R(20,80);b=R(2,8);c=R(2,8);x=a*(b+c);return mcq(`${a} × (${b} + ${c}) = ?`,x,`Add the bracket and use distributive multiplication if faster.`,`Simplification`,[x+b,x-b,x+10])}
- if(type===10){a=R(20,90);b=R(10,40);c=R(2,9);x=(a+b)/c;return mcq(`(${a} + ${b}) ÷ ${c} = ?`,dec(x,2),`Bracket first, then divide; check whether the sum is divisible before calculating.`,`Simplification`,[dec(x+1,2),dec(x-1,2),dec(x+2,2)])}
- if(type===11){a=R(20,80);b=R(2,8);c=R(2,8);x=a+b*c-b;return mcq(`${a} + ${b} × ${c} − ${b} = ?`,x,`Apply multiplication first, then simplify.`,`Simplification`,[x+1,x-1,x+2])}
- if(type===12){a=R(4,12);b=R(2,8);c=R(2,8);x=a*b/c;return mcq(`${a} × ${b} ÷ ${c} = ?`,dec(x,2),`Multiply/divide left to right, cancelling common factors first.`,`Simplification`,[dec(x+1,2),dec(x-1,2),dec(x+2,2)])}
- if(type===13){a=R(20,80);b=P([10,20,25,50]);c=R(10,40);x=a*b/100+c;return mcq(`${b}% of ${a} + ${c} = ?`,x,`Find the percentage using a familiar fraction, then add.`,`Simplification`,[x+2,x-2,x+5])}
- a=R(20,80);b=R(2,9);c=R(2,9);d=R(2,9);x=a-(b+c*d);return mcq(`${a} − (${b} + ${c} × ${d}) = ?`,x,`Inside the bracket, multiply first; then add; finally subtract.`,`Simplification`,[x+1,x-1,x+2])
-}
-function moderateApproximation(){
- const type=R(1,10);let a,b,c,p,x;
- if(type===1){a=R(180,980)/10;b=R(20,98)/10;x=Math.round(a)*Math.round(b);return mcq(`${a.toFixed(1)} × ${b.toFixed(1)} ≈ ?`,x,`Round ${a.toFixed(1)} and ${b.toFixed(1)} to convenient values, then multiply.`,`Approximation`,[x+10,x-10,x+20])}
- if(type===2){a=R(300,990)/10;b=R(20,98)/10;x=Math.round(a)/Math.round(b);return mcq(`${a.toFixed(1)} ÷ ${b.toFixed(1)} ≈ ?`,dec(x,1),`Round to convenient nearby values and estimate the quotient.`,`Approximation`,[dec(x+.5,1),dec(x-.5,1),dec(x+1,1)])}
- if(type===3){a=R(100,900);b=R(10,90);c=R(100,900);x=Math.round(a/100)*100+Math.round(b/10)*10-Math.round(c/100)*100;return mcq(`${a} + ${b} − ${c} ≈ ?`,x,`Round each term to a convenient place value, then combine.`,`Approximation`,[x+20,x-20,x+40])}
- if(type===4){a=R(100,900);p=P([12.5,16.67,25,33.33,37.5,62.5,66.67,75]);x=Math.round(a*p/100);return mcq(`${p}% of ${a} ≈ ?`,x,`Use the nearest familiar fraction/percentage and estimate.`,`Approximation`,[x+10,x-10,x+20])}
- if(type===5){a=P([980,1020,1520,1980,2020,2480,2520,3600,4025]);x=Math.round(Math.sqrt(a));return mcq(`√${a} ≈ ?`,x,`Bracket the number between nearby perfect squares and select the closest integer.`,`Approximation`,[x-1,x+1,x+2])}
- if(type===6){a=R(90,999);b=R(20,90);c=R(10,80);x=Math.round(a/b)+c;return mcq(`${a} ÷ ${b} + ${c} ≈ ?`,x,`Round the divisor and dividend sensibly, estimate the quotient, then add.`,`Approximation`,[x+2,x-2,x+4])}
- if(type===7){a=R(10,90);b=R(10,90);c=R(10,90);x=Math.round(a/10)*10+Math.round(b/10)*10-Math.round(c/10)*10;return mcq(`${a} + ${b} − ${c} ≈ ?`,x,`Round each number to the nearest ten and calculate.`,`Approximation`,[x+10,x-10,x+20])}
- if(type===8){a=R(100,900);b=R(10,90);c=R(2,9);x=Math.round(a/Math.round(b/10)*10)*c;return mcq(`${a} ÷ ${b} × ${c} ≈ ?`,Math.round(x),`Approximate the divisor to a nearby multiple of ten, then multiply.`,`Approximation`,[Math.round(x)+5,Math.round(x)-5,Math.round(x)+10])}
- if(type===9){a=R(200,900);b=R(10,40);c=R(10,40);x=Math.round(a*(100+b)/100);return mcq(`${a} × (1 + ${b}%) ≈ ?`,x,`Convert the percentage to a nearby familiar increase and estimate.`,`Approximation`,[x+10,x-10,x+20])}
- a=R(200,900);b=R(10,40);c=R(10,40);x=Math.round(a*(100-b)/100)+c;return mcq(`${a} × (1 − ${b}%) + ${c} ≈ ?`,x,`Apply the percentage decrease approximately, then add the final term.`,`Approximation`,[x+10,x-10,x+20])
-}
-
 function make(topic,subtopic=null){
  if(topic==="tables")return table(Number(subtopic)||R(6,30));if(topic==="squares")return square();if(topic==="cubes")return cube();if(topic==="percent")return percent();if(topic==="fractions")return fraction();if(topic==="number")return ({addition:add,subtraction:sub,multiplication:mul,division:div}[subtopic]||number)();
  if(topic==="mixed")return make(P(["tables","squares","cubes","percent","fractions","number"]));
  if(topic==="simplification")return moderateSimplification();
  if(topic==="approximation")return moderateApproximation();
  if(topic==="series")return moderateSeries();
- if(topic==="arithmetic")return moderateArithmetic();
- if(topic==="di")return moderateDI();
- if(topic==="quadratic")return moderateQuadratic();
  let a=R(4,25),b=R(4,25),x=Math.max(a,b);return q(`x² − ${a+b}x + ${a*b} = 0; larger root?`,x,`The roots are ${a} and ${b}.`,"Mains-Level Quadratic","Hard")
 }
 
@@ -351,7 +255,7 @@ function moderateQuality(qq,topic){
  const e=qq.expr||"";
  const nums=(e.match(/\d+(?:\.\d+)?/g)||[]).length;
  const ops=(e.match(/[+−×÷%]/g)||[]).length;
- if(topic==="simplification") return ops>=2 && nums>=3 && e.length>=16;
+ if(topic==="simplification") return ops>=1 && nums>=2 && e.length>=8;
  if(topic==="approximation") return (ops>=1 && nums>=2 && e.length>=12);
  return true;
 }
