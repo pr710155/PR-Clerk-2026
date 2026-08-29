@@ -55,6 +55,6 @@ function finish(){
  let pct=state.score*10, old=+localStorage.getItem("best")||0;localStorage.setItem("best",Math.max(old,pct));localStorage.setItem("attempts",(+localStorage.getItem("attempts")||0)+10);
  screen.innerHTML=`<section class="hero" style="text-align:center"><span class="pill">SET COMPLETE</span><h1>${state.score}/10</h1><p>Accuracy: <b>${pct}%</b></p><div class="row"><button class="primary" onclick="start('${state.topic.replaceAll("'","\\'")}')">Practice Again</button><button class="secondary" onclick="level(${state.level.id})">Choose Topic</button></div></section>`;
 }
-back.onclick=()=>{if(state.view==="quiz"||state.view==="level")level(state.level.id);else home()};
+back.onclick=()=>{if(state.view==="quiz")level(state.level.id);else if(state.view==="level")home();else home()};
 home();
 if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});

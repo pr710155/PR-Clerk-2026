@@ -1,4 +1,4 @@
-# PR Clerk 2026 — v1
+# PR Clerk 2026 — v1.2
 
 This is a working private Progressive Web App (PWA) starter.
 
@@ -21,3 +21,11 @@ For phone/tablet use, the app can later be hosted on a free static host and inst
 
 ## Important
 The current question generator is deliberately a first working engine, not the final exam-grade question bank. The next development pass should replace/add generators for the exact PR Clerk patterns and difficulty rules we finalized.
+
+
+## v1.2 visual update
+- More colorful but restrained visual design
+- Gradient header and progress bar
+- Subtle topic accent colors
+- Improved cards, buttons, borders and shadows
+- Level 2 back button now returns to the main menu
