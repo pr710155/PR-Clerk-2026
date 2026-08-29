@@ -64,3 +64,20 @@ answer-box{min-height:64px;margin:18px auto 12px;max-width:360px;border:2px soli
 .section-card .start{align-self:flex-start;margin-top:16px}
 .section-card h3{margin:0 0 6px}
 .section-card .topic{margin-top:0}
+
+
+/* Final polish: stronger app branding + user-controlled test setup */
+.brand{font-size:20px;line-height:1.05;letter-spacing:.09em;text-shadow:0 1px 1px rgba(0,0,0,.12)}
+header .muted{font-size:14px;font-weight:650;letter-spacing:.02em}
+.home-hero h1{font-size:38px;letter-spacing:-.02em}
+.home-hero h1 span{background:linear-gradient(90deg,#4f67d8,#8b5cf6);-webkit-background-clip:text;background-clip:text;color:transparent}
+.setup-hero{max-width:760px;margin:0 auto}
+.setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px}
+.setup-field{display:flex;flex-direction:column;gap:7px;text-align:left;font-weight:800}
+.setup-field span{font-size:13px;color:#566178;text-transform:uppercase;letter-spacing:.04em}
+.setup-field input{width:100%;min-height:54px;border:2px solid #dfe4ee;border-radius:15px;padding:10px 14px;background:#fff;color:var(--ink);font-size:22px;font-weight:800;outline:none}
+.setup-field input:focus{border-color:#7181df;box-shadow:0 0 0 3px #7181df22}
+.preset-row{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+.preset{font-size:13px}
+.setup-start{margin-top:18px;min-height:52px}
+@media(max-width:500px){.brand{font-size:18px}.home-hero h1{font-size:31px}.setup-grid{grid-template-columns:1fr 1fr;gap:10px}.setup-field input{font-size:20px}.preset-row{display:grid;grid-template-columns:1fr 1fr 1fr}.preset{padding:11px 7px;font-size:12px}}
