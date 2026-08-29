@@ -61,3 +61,6 @@ Moderate results now include:
 - slowest-attempt highlights that jump to the relevant review item
 
 The coaching is computed locally from performance and timing data; no answer data is sent to a third-party AI service.
+
+## V10 Easy Number Games Shortcut Coach
+Easy Number Games now deliberately trains multiple mental-calculation patterns rather than only increasing number size. Addition, subtraction, multiplication and division questions carry a post-submission highlight, best approach, shortcut and quick-method library. The shortcut is never shown while the question is being attempted.
