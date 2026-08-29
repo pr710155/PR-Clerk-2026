@@ -162,3 +162,10 @@ header .muted{font-size:14px;font-weight:650;letter-spacing:.02em}
 /* Never show MCQ letter markers if an old cached/generated option set exists. */
 .options,.option{display:none!important}
 @media(max-width:500px){.answer-input{min-height:68px;font-size:26px}.symbol-pad{gap:6px}.symbol-pad button{min-height:42px}.solution-panel{padding:12px!important}}
+/* Quadratic root-comparison choices: no A/B/C/D/E labels. */
+.mcq-options{max-width:620px;margin:20px auto 18px;display:grid!important;gap:11px;text-align:left}
+.mcq-option{width:100%;min-height:58px;border:1px solid #dce2ee;border-radius:16px;background:#fff;display:flex!important;align-items:center;padding:14px 18px;color:#202a3d;cursor:pointer;box-shadow:0 4px 12px rgba(40,55,95,.05);font-size:17px;font-weight:700;text-align:left;transition:.15s ease}
+.mcq-option:hover{border-color:#7183dc;transform:translateY(-1px)}
+.mcq-option.selected{border:2px solid #5268d9;background:#f1f4ff}
+.mcq-text{display:block}
+@media(max-width:560px){.mcq-option{min-height:54px;padding:13px 15px;font-size:16px}.mcq-options{gap:9px}}

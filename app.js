@@ -335,11 +335,21 @@ function fmt(s){s=Math.max(0,Math.round(Number(s)||0));return`${Math.floor(s/60)
 function render(){
  let q=S.qs[S.i],chosen=S.answers[S.i];
  if(!S.qStartedAt)S.qStartedAt=Date.now();
- const isMC=false;
  const isQuadratic=q.skill==="Quadratic Equations";
+ const pencilSkills=["Simplification","Approximation"];
+ const isPencil=pencilSkills.includes(q.skill)||/^Table /.test(q.skill);
+ const isMC=isQuadratic;
  const safeValue=String(chosen??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;");
- const body=`<div class="answer-input-wrap"><label for="answerInput" class="answer-input-label">Your answer</label><textarea id="answerInput" class="answer-input" rows="1" inputmode="text" enterkeyhint="done" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Enter your answer" placeholder="Tap here and write with Apple Pencil / stylus">${safeValue}</textarea><div class="input-help">✍️ Handwriting/Scribble supported • typing and keypad also available</div></div><div class="keypad">${["1","2","3","4","5","6","7","8","9","0","/","."].map(k=>`<button type="button" onclick="key('${k}')">${k}</button>`).join("")}</div>${isQuadratic?`<div class="symbol-pad"><button type="button" onclick="key('x')">x</button><button type="button" onclick="key('>')">&gt;</button><button type="button" onclick="key('<')">&lt;</button><button type="button" onclick="key('=')">=</button><button type="button" onclick="key('≥')">≥</button><button type="button" onclick="key('≤')">≤</button></div>`:""}<div class="pad-actions"><button type="button" class="secondary" onclick="clearAns()">Clear</button><button type="button" class="secondary" onclick="backspace()">⌫</button></div>`;
- screen.innerHTML=`<div class="topline"><span class="pill">QUESTION ${S.i+1}/${S.qs.length}</span><b id="clock">${fmt(remain())}</b></div><div class="bar"><i style="width:${S.i/S.qs.length*100}%"></i></div><section class="question"><div class="timer-note">⏱ <b id="clock2">${fmt(remain())}</b> remaining</div><div class="expr">${q.expr}</div>${body}<div class="row"><button class="secondary" onclick="prev()" ${S.i===0?"disabled":""}>← Previous</button><button class="primary" onclick="${S.i===S.qs.length-1?"submit(false)":"next()"}">${S.i===S.qs.length-1?"SUBMIT TEST":"Next →"}</button></div><div class="small center">${isMC?"Choose one option • No instant feedback":"Enter your answer • No instant feedback"}</div></section>`}
+ let body="";
+ if(isQuadratic){
+   const relOptions=["x > y","x ≥ y","x = y or relationship cannot be determined","x < y","x ≤ y"];
+   body=`<div class="mcq-options">${relOptions.map((o,idx)=>`<button type="button" class="mcq-option ${chosen===o?"selected":""}" onclick="choose('${o.replace(/'/g,"\\'")}')"><span class="mcq-text">${o}</span></button>`).join("")}</div>`;
+ } else if(isPencil){
+   body=`<div class="answer-input-wrap"><label for="answerInput" class="answer-input-label">Your answer</label><textarea id="answerInput" class="answer-input" rows="1" inputmode="text" enterkeyhint="done" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Enter your answer" placeholder="Tap here and write with Apple Pencil / stylus">${safeValue}</textarea><div class="input-help">✍️ Apple Pencil / stylus / handwriting supported</div></div><div class="keypad">${["1","2","3","4","5","6","7","8","9","0","/","."].map(k=>`<button type="button" onclick="key('${k}')">${k}</button>`).join("")}</div><div class="pad-actions"><button type="button" class="secondary" onclick="clearAns()">Clear</button><button type="button" class="secondary" onclick="backspace()">⌫</button></div>`;
+ } else {
+   body=`<div class="answer-input-wrap"><label for="answerInput" class="answer-input-label">Your answer</label><input id="answerInput" class="answer-input" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Enter your answer" placeholder="Type your answer" value="${safeValue}"></div>`;
+ }
+ screen.innerHTML=`<div class="topline"><span class="pill">QUESTION ${S.i+1}/${S.qs.length}</span><b id="clock">${fmt(remain())}</b></div><div class="bar"><i style="width:${S.i/S.qs.length*100}%"></i></div><section class="question"><div class="timer-note">⏱ <b id="clock2">${fmt(remain())}</b> remaining</div><div class="expr">${q.expr}</div>${body}<div class="row"><button class="secondary" onclick="prev()" ${S.i===0?"disabled":""}>← Previous</button><button class="primary" onclick="${S.i===S.qs.length-1?"submit(false)":"next()"}">${S.i===S.qs.length-1?"SUBMIT TEST":"Next →"}</button></div><div class="small center">${isMC?"Choose one option • No instant feedback":isPencil?"Write your answer • No instant feedback":"Enter your answer • No instant feedback"}</div></section>`}
 function choose(v){S.answers[S.i]=v;render()}
 function typedAnswer(v){
   v=String(v??"").replace(/[^0-9.\/-xX<>=≤≥\s]/g,"");
