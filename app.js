@@ -18,8 +18,10 @@ const levels=[
  {id:"missingSeries",name:"Missing Number Series",desc:"Clerk Prelims missing-term patterns"},
  {id:"wrongSeries",name:"Wrong Number Series",desc:"Clerk Prelims wrong-term patterns"},
  {id:"blindfold",name:"Blind Fold",desc:"Surprise mix of all Moderate sections"}]},
-{id:3,name:"Hard",desc:"Calculation Foundation",topics:[
-{id:"hardquad",name:"Mains-Level Quadratic",desc:"Advanced quadratic practice"}]}
+{id:3,name:"Hard",desc:"Advanced Exam Practice",topics:[
+{id:"hardquad",name:"Advanced Quadratic Equations",desc:"Mains-level multi-step quadratic problems"},
+{id:"hardmissing",name:"Advanced Missing Number Series",desc:"Multi-layer mains-level missing-term patterns"},
+{id:"hardwrong",name:"Advanced Wrong Number Series",desc:"Q110-style wrong-term and relationship problems"}]}
 ];
 
 const R=(a,b)=>Math.floor(Math.random()*(b-a+1))+a,P=a=>a[R(0,a.length-1)],G=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b)[a,b]=[b,a%b];return a},F=(n,d)=>{let g=G(n,d);return`${n/g}/${d/g}`},sh=a=>a.sort(()=>Math.random()-.5);
@@ -298,6 +300,8 @@ function make(topic,subtopic=null){
  if(topic==="missingSeries")return moderateSeries(false);
  if(topic==="wrongSeries")return moderateSeries(true);
  if(topic==="hardquad")return advancedQuadratic();
+ if(topic==="hardmissing")return advancedMissingSeries();
+ if(topic==="hardwrong")return advancedWrongSeries();
  if(topic==="blindfold")return moderateBlindfold();
  return q("Choose a Moderate topic to begin.","","Moderate practice.");
 }
@@ -319,6 +323,7 @@ function setup(topic,subtopic=null){
 function beginSetup(){let n=Math.max(1,Math.min(100,parseInt(document.querySelector('#qcount').value,10)||10));let min=Math.max(1,Math.min(180,parseInt(document.querySelector('#qtime').value,10)||1));start(S.topic,S.subtopic,n,min*60)}
 function moderateQuality(qq,topic){
  if(topic==="missingSeries"||topic==="wrongSeries") return true;
+ if(topic==="hardmissing"||topic==="hardwrong") return true;
  if(topic==="blindfold") return true;
  const e=qq.expr||"";
  const nums=(e.match(/\d+(?:\.\d+)?/g)||[]).length;
@@ -335,10 +340,11 @@ function fmt(s){s=Math.max(0,Math.round(Number(s)||0));return`${Math.floor(s/60)
 function render(){
  let q=S.qs[S.i],chosen=S.answers[S.i];
  if(!S.qStartedAt)S.qStartedAt=Date.now();
- const isMC=false;
- const isQuadratic=q.skill==="Quadratic Equations";
+ const isMC=Array.isArray(q.options)&&q.options.length>0;
  const safeValue=String(chosen??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;");
- const body=`<div class="answer-input-wrap"><label for="answerInput" class="answer-input-label">Your answer</label><textarea id="answerInput" class="answer-input" rows="1" inputmode="text" enterkeyhint="done" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Enter your answer" placeholder="Enter your answer">${safeValue}</textarea><div class="input-help">Type your answer or use the keypad.</div></div><div class="keypad">${["1","2","3","4","5","6","7","8","9","0","/","."].map(k=>`<button type="button" onclick="key('${k}')">${k}</button>`).join("")}</div>${isQuadratic?`<div class="symbol-pad"><button type="button" onclick="key('x')">x</button><button type="button" onclick="key('>')">&gt;</button><button type="button" onclick="key('<')">&lt;</button><button type="button" onclick="key('=')">=</button><button type="button" onclick="key('≥')">≥</button><button type="button" onclick="key('≤')">≤</button></div>`:""}<div class="pad-actions"><button type="button" class="secondary" onclick="clearAns()">Clear</button><button type="button" class="secondary" onclick="backspace()">⌫</button></div>`;
+ const optionBody=isMC?`<div class="options">${q.options.map(v=>{const sv=String(v);const sel=String(chosen??"")===sv;const safe=sv.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;");return `<button type="button" class="option ${sel?"selected":""}" onclick="choose(${JSON.stringify(sv).replace(/</g,"\u003c")})"><span class="radio"></span><b>${safe}</b></button>`}).join("")}</div>`:
+ `<div class="answer-input-wrap"><label for="answerInput" class="answer-input-label">Your answer</label><textarea id="answerInput" class="answer-input" rows="1" inputmode="text" enterkeyhint="done" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Enter your answer" placeholder="Enter your answer">${safeValue}</textarea><div class="input-help">Type your answer or use the keypad.</div></div><div class="keypad">${["1","2","3","4","5","6","7","8","9","0","/","."].map(k=>`<button type="button" onclick="key('${k}')">${k}</button>`).join("")}</div><div class="pad-actions"><button type="button" class="secondary" onclick="clearAns()">Clear</button><button type="button" class="secondary" onclick="backspace()">⌫</button></div>`;
+ const body=optionBody;
  screen.innerHTML=`<div class="topline"><span class="pill">QUESTION ${S.i+1}/${S.qs.length}</span><b id="clock">${fmt(remain())}</b></div><div class="bar"><i style="width:${S.i/S.qs.length*100}%"></i></div><section class="question"><div class="timer-note">⏱ <b id="clock2">${fmt(remain())}</b> remaining</div><div class="expr">${q.expr}</div>${body}<div class="row"><button class="secondary" onclick="prev()" ${S.i===0?"disabled":""}>← Previous</button><button class="primary" onclick="${S.i===S.qs.length-1?"submit(false)":"next()"}">${S.i===S.qs.length-1?"SUBMIT TEST":"Next →"}</button></div><div class="small center">${isMC?"Choose one option • No instant feedback":"Enter your answer • No instant feedback"}</div></section>`}
 function choose(v){S.answers[S.i]=v;render()}
 function typedAnswer(v){
@@ -374,7 +380,7 @@ function answerCorrect(q,a){
  if(q.skill==="Quadratic Equations")return aa===bb;
  return aa===bb || numericEqual(aa,bb);
 }
-function submit(auto){if(S.view!=="quiz")return;recordQuestionTime();stop();let elapsed=Math.min(S.limit,(Date.now()-S.start)/1000),correct=0,wrong=0,un=0;S.qs.forEach((q,i)=>{if(S.answers[i]===null)un++;else if(answerCorrect(q,S.answers[i]))correct++;else wrong++});let marks=correct-wrong*.25;renderResult(elapsed,correct,wrong,un,marks,auto)}
+function submit(auto){if(S.view!=="quiz")return;recordQuestionTime();stop();let elapsed=Math.min(S.limit,(Date.now()-S.start)/1000),correct=0,wrong=0,un=0;S.qs.forEach((q,i)=>{if(S.answers[i]===null)un++;else if(answerCorrect(q,S.answers[i]))correct++;else wrong++});let marks=correct-wrong*.25;S.view="result";renderResult(elapsed,correct,wrong,un,marks,auto)}
 function aiCoach(elapsed){
  const rows=S.qs.map((q,i)=>({q,i,t:S.qTimes[i]||0,a:S.answers[i],ok:answerCorrect(q,S.answers[i])}));
  const attempted=rows.filter(x=>x.a!==null), wrong=attempted.filter(x=>!x.ok), correct=attempted.filter(x=>x.ok);
@@ -1501,7 +1507,7 @@ function moderateQuadratic() {
     const z=q(expr,ans,"", "Quadratic Equations", "Moderate", null);
     z.coach={highlight,approach,shortcut,steps,quickMethods:methods};
     z.meta={...(z.meta||{}),...meta};
-    z.options=null;
+    z.options=(typeof ans==="string" && /^x\s*(>|<|=|>=|<=|≥|≤)\s*y$/i.test(ans))?["x > y","x ≥ y","x = y","x < y","x ≤ y"]:null;
     return z;
   };
   const factor=(a,b)=>`(${a>0?a:`− ${Math.abs(a)}`})(${b>0?b:`− ${Math.abs(b)}`})`;
@@ -1743,6 +1749,129 @@ function advancedQuadratic(){
   const v=S0*S0-4*P0;
   return qout(`${e}\nFind the square of the difference between the roots.`,v,
     "The square of the root difference is the discriminant divided by a².","Use (α−β)²=S²−4P.","For monic-style root relations, compare S² and 4P before taking any root.",[`S=${S0}, P=${P0}.`,`(α−β)² = ${S0}² − 4(${P0}) = ${v}.`]);
+}
+
+
+// ============================================================
+// HARD → ADVANCED MISSING NUMBER SERIES
+// ============================================================
+function advancedMissingSeries(){
+  const type=R(1,6);
+  const clean=(arr)=>arr.map(v=>Number.isInteger(v)?String(v):String(Number(v.toFixed(2))));
+  const out=(series,answer,approach,shortcut,steps,highlight)=>{
+    return q(`Find the missing term: ${clean(series).join(", ")}`,answer,"","Missing Number Series","Hard",null);
+  };
+
+  if(type===1){
+    // Alternating ×2 and increasing addition.
+    const a=R(5,15), add=R(3,9), s=[a];
+    for(let i=1;i<7;i++) s.push(i%2===1?s[i-1]*2+s[i-1]*0+s[0]*0+s[i-1]-s[i-1]+s[i-1]*2+s[0]*0+s[i-1]*0:s[i-1]+add+i);
+    // Rebuild cleanly to avoid accidental dependence on the expression above.
+    const z=[a];
+    for(let i=1;i<7;i++) z.push(i%2===1?z[i-1]*2:z[i-1]+add+i);
+    const idx=R(2,5),ans=z[idx],shown=z.slice();shown[idx]="?";
+    return {expr:`Find the missing term: ${shown.join(", ")}`,ans:String(ans),exp:"","skill":"Missing Number Series","diff":"Hard",options:null,coach:{highlight:"The operations alternate; don't force one rule across the whole series.",approach:"Separate odd and even transitions, then continue each operation.",shortcut:"Check alternating multiplication/addition before using differences.",steps:[`Odd transitions use ×2.`,`Even transitions add ${add}+step number.`,`The missing term is ${ans}.`],quickMethods:["Split alternating operations.","Verify the rule on both sides of the gap."]}};
+  }
+
+  if(type===2){
+    // Differences are consecutive squares multiplied by a coefficient.
+    const k=R(1,3),start=R(10,40),z=[start];
+    for(let i=1;i<7;i++) z.push(z[i-1]+k*i*i);
+    const idx=R(2,5),ans=z[idx],shown=z.slice();shown[idx]="?";
+    return {expr:`Find the missing term: ${shown.join(", ")}`,ans:String(ans),exp:"","skill":"Missing Number Series","diff":"Hard",options:null,coach:{highlight:`Successive differences follow ${k}×1², ${k}×2², ${k}×3²...`,approach:"Write the first differences and compare them with consecutive squares.",shortcut:"If differences grow quickly, test squares before second differences.",steps:[`Differences begin ${k}×1², ${k}×2², ${k}×3²...`,`The required difference at the gap gives ${ans}.`],quickMethods:["Check first differences.","Compare differences with square numbers."]}};
+  }
+
+  if(type===3){
+    // ×2−n, ×3−n, ×4−n ...
+    const start=R(8,20),n=R(1,5),z=[start];
+    for(let i=1;i<7;i++) z.push(z[i-1]*(i+1)-n);
+    const idx=R(2,5),ans=z[idx],shown=z.slice();shown[idx]="?";
+    return {expr:`Find the missing term: ${shown.join(", ")}`,ans:String(ans),exp:"","skill":"Missing Number Series","diff":"Hard",options:null,coach:{highlight:"The multiplier increases by 1 while the subtraction stays fixed.",approach:"Inspect the multiplier from one transition to the next.",shortcut:"Try ×2−n, ×3−n, ×4−n... when terms rise sharply.",steps:[`Multipliers are ×2, ×3, ×4...`,`Subtract ${n} after each multiplication.`,`Missing term = ${ans}.`],quickMethods:["Check changing multipliers.","Keep the adjustment constant."]}};
+  }
+
+  if(type===4){
+    // Alternating squares/cubes added.
+    const start=R(5,20),z=[start];
+    for(let i=1;i<7;i++) z.push(z[i-1]+(i%2?i*i:i*i*i));
+    const idx=R(2,5),ans=z[idx],shown=z.slice();shown[idx]="?";
+    return {expr:`Find the missing term: ${shown.join(", ")}`,ans:String(ans),exp:"","skill":"Missing Number Series","diff":"Hard",options:null,coach:{highlight:"The increments alternate between a square and a cube.",approach:"Take differences and classify each increment as n² or n³.",shortcut:"When differences jump irregularly, test alternating square/cube additions.",steps:[`Differences alternate: 1², 2³, 3², 4³...`,`Continue the alternating rule to get ${ans}.`],quickMethods:["Check differences first.","Test square/cube alternation."]}};
+  }
+
+  if(type===5){
+    // Two interleaved sequences.
+    const a=R(5,15),b=R(20,40),z=[a,b];
+    for(let i=2;i<8;i++){
+      if(i%2===0){const n=i/2;z.push(z[i-2]+n*3);}
+      else {const n=(i-1)/2;z.push(z[i-2]+n*5+5);}
+    }
+    const idx=R(2,5),ans=z[idx],shown=z.slice();shown[idx]="?";
+    return {expr:`Find the missing term: ${shown.join(", ")}`,ans:String(ans),exp:"","skill":"Missing Number Series","diff":"Hard",options:null,coach:{highlight:"There are two interleaved sequences hidden in the single row.",approach:"Separate odd-position and even-position terms, then continue each sequence.",shortcut:"If consecutive differences look messy, split odd and even positions.",steps:[`Odd-position terms follow one progression.`,`Even-position terms follow another progression.`,`The missing term is ${ans}.`],quickMethods:["Split odd/even positions.","Solve each mini-series separately."]}};
+  }
+
+  // Product/sum transformation: ×n + n².
+  const start=R(4,10),z=[start];
+  for(let i=1;i<7;i++) z.push(z[i-1]*(i+1)+(i+1)*(i+1));
+  const idx=R(2,5),ans=z[idx],shown=z.slice();shown[idx]="?";
+  return {expr:`Find the missing term: ${shown.join(", ")}`,ans:String(ans),exp:"","skill":"Missing Number Series","diff":"Hard",options:null,coach:{highlight:"Each step combines a changing multiplier with the square of that multiplier.",approach:"Look for ×n followed by +n² rather than only differences.",shortcut:"For rapidly growing terms, test ×n ± n² patterns.",steps:[`Step multipliers increase: ×2, ×3, ×4...`,`The adjustment is the square of the multiplier.`,`Missing term = ${ans}.`],quickMethods:["Check ×n with a linked adjustment.","Use the operation sequence, not raw differences."]}};
+}
+
+// ============================================================
+// HARD → ADVANCED WRONG NUMBER SERIES
+// Q110-STYLE: wrong term + P/Q relationship
+// ============================================================
+function advancedWrongSeries(){
+  const type=R(1,4);
+
+  // Exact Q110-style multiplier chain: ÷4, ÷2, ×1, ×2, ×4, ×8, ×16.
+  // Start values are chosen so every term is integral and Q is a square.
+  if(type===1){
+    const start=P([8,32,128,512]);
+    const mult=[1/4,1/2,1,2,4,8,16];
+    const clean=[start];
+    for(const m of mult) clean.push(clean[clean.length-1]*m);
+    const Q=clean[7], root=Math.sqrt(Q);
+    const wrongIndex=P([2,3,4,5]);
+    const correct=clean[wrongIndex];
+    const Pval=root;
+    if(Pval===correct) return advancedWrongSeries();
+    const shown=clean.slice(0,7);shown[wrongIndex]=Pval;
+    const answer="P = √Q";
+    const options=[answer,"P = √Q + 16","P = 2√Q","P = Q/2","P = √Q − 16"];
+    return {expr:`A series is given with one wrong term. ${shown.join(", ")}, Q. If P is the wrong displayed term and Q is the next term of the corrected series, find the relation between P and Q.`,ans:answer,exp:"","skill":"Wrong Number Series","diff":"Hard",options,coach:{highlight:"The multipliers form ÷4, ÷2, ×1, ×2, ×4, ×8, ×16.",approach:"First identify the changing multiplier. Correct the broken term, then continue the clean sequence to Q.",shortcut:"Think in powers of 2: the multiplier doubles at every step after ÷4, ÷2, ×1.",steps:[`The multiplier pattern is ÷4, ÷2, ×1, ×2, ×4, ×8, ×16.`,`The displayed wrong term P = ${Pval}; the correct term there is ${correct}.`,`Continue the corrected pattern: Q = ${Q}.`,`√Q = √${Q} = ${root} = P.`,`Therefore P = √Q.`],quickMethods:["Find the operation pattern first.","Correct the term before finding Q.","Only then compare P and Q."]}};
+  }
+
+  if(type===2){
+    // Square-difference wrong term, but final question still uses P/Q.
+    const start=R(8,30),k=P([1,2,3]),clean=[start];
+    for(let i=1;i<7;i++) clean.push(clean[i-1]+k*i*i);
+    const wrongIndex=R(2,5),correct=clean[wrongIndex],Q=clean[6],Pval=correct+ k*4;
+    if(Pval===correct||Pval<=0) return advancedWrongSeries();
+    const shown=clean.slice(0,7);shown[wrongIndex]=Pval;
+    const answer=Pval>Q?"P > Q":"P < Q";
+    const options=["P > Q","P ≥ Q","P = Q","P < Q","P ≤ Q"];
+    return {expr:`A series is given with one wrong term. ${shown.join(", ")}. If P is the wrong term and Q is the final term of the corrected series, compare P and Q.`,ans:answer,exp:"","skill":"Wrong Number Series","diff":"Hard",options,coach:{highlight:`The differences follow ${k}×1², ${k}×2², ${k}×3²...`,approach:"Use first differences to identify the broken term, then compare the displayed wrong term with the corrected final term.",shortcut:"For square-difference series, compare the wrong value with the corrected continuation instead of rebuilding everything.",steps:[`Expected difference pattern: ${k}×1², ${k}×2², ${k}×3²...`,`Wrong displayed term P = ${Pval}; correct value = ${correct}.`,`Corrected final term Q = ${Q}.`,`Therefore ${answer}.`],quickMethods:["Check square differences.","Separate wrong value from corrected value."]}};
+  }
+
+  if(type===3){
+    // ×2, ×3, ×4... with a wrong term and relationship.
+    const start=R(2,6),clean=[start];
+    for(let i=1;i<7;i++) clean.push(clean[i-1]*(i+1));
+    const wrongIndex=R(2,5),correct=clean[wrongIndex],Q=clean[6],Pval=correct*2;
+    if(Pval===correct) return advancedWrongSeries();
+    const shown=clean.slice(0,7);shown[wrongIndex]=Pval;
+    const answer=Pval===2*Q?"P = 2Q":Pval<Q?"P < Q":"P > Q";
+    const options=answer==="P = 2Q"?["P = 2Q","P = Q","P = Q/2","P > Q","P < Q"]:["P > Q","P = Q","P < Q","P = 2Q","P = Q/2"];
+    return {expr:`A series is given with one wrong term. ${shown.join(", ")}. If P is the wrong term and Q is the final corrected term, find the relation between P and Q.`,ans:answer,exp:"","skill":"Wrong Number Series","diff":"Hard",options,coach:{highlight:"The clean sequence uses ×2, ×3, ×4, ×5...",approach:"Read the changing multiplier, locate the term that violates it, then compare P with Q.",shortcut:"When numbers grow fast, inspect multipliers before differences.",steps:[`Expected multipliers: ×2, ×3, ×4, ×5...`,`P = ${Pval}; corrected value = ${correct}.`,`Q = ${Q}.`,`Therefore ${answer}.`],quickMethods:["Check changing multipliers.","Correct before comparing."]}};
+  }
+
+  // Alternating ×2 and +n; final relation is numeric comparison.
+  const start=R(5,15),add=R(3,8),clean=[start];
+  for(let i=1;i<7;i++) clean.push(i%2?clean[i-1]*2:clean[i-1]+add+i);
+  const wrongIndex=R(2,5),correct=clean[wrongIndex],Pval=correct+add,Q=clean[6];
+  const shown=clean.slice(0,7);shown[wrongIndex]=Pval;
+  const answer=Pval>Q?"P > Q":Pval<Q?"P < Q":"P = Q";
+  const options=["P > Q","P ≥ Q","P = Q","P < Q","P ≤ Q"];
+  return {expr:`A series is given with one wrong term. ${shown.join(", ")}. If P is the wrong term and Q is the final corrected term, compare P and Q.`,ans:answer,exp:"","skill":"Wrong Number Series","diff":"Hard",options,coach:{highlight:"The sequence alternates between multiplication and addition.",approach:"Separate the alternating operations, correct P, then compare it with Q.",shortcut:"Split odd and even transitions instead of forcing a single difference pattern.",steps:[`Odd transitions use ×2; even transitions add a growing adjustment.`,`P = ${Pval}; correct value = ${correct}.`,`Q = ${Q}.`,`Therefore ${answer}.`],quickMethods:["Split alternating operations.","Correct P before comparing with Q."]}};
 }
 
 function moderateBlindfold() {

@@ -6,7 +6,7 @@ A private Progressive Web App (PWA) for fast calculation practice.
 
 - Easy — Calculation Foundation
 - Moderate — Speed Maths
-- Hard — Calculation Foundation
+- Hard — Advanced Exam Practice
 
 There is no Full Blind Test.
 
@@ -80,3 +80,17 @@ Moderate currently contains ONLY Simplification, Approximation, and Number Serie
 
 
 V24 CHANGE: Removed the app's stylus/Apple Pencil/Scribble feature and related UI. Answers use normal typing/keypad input; quadratic remains comparison-options based.
+
+
+## V27 Hard Advanced
+
+Hard now includes three independent subsections:
+- Advanced Quadratic Equations — mains-level multi-step quadratic work
+- Advanced Missing Number Series — layered operation, square/cube, alternating and interleaved patterns
+- Advanced Wrong Number Series — Q110-style wrong-term detection followed by P/Q relationship questions
+
+Hard wrong-number questions are constructed from a valid sequence first and then deliberately corrupted, so the pattern remains mathematically consistent.
+
+Quadratic comparison questions use clean unlabelled relationship choices (no A/B/C/D/E labels). Other questions use the normal answer field.
+
+The result-page back action is also fixed so submitting a test no longer triggers the "Leave this test?" confirmation.
