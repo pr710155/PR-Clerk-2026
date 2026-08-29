@@ -27,6 +27,66 @@ function opts(ans,more=[]){let s=new Set([String(ans)]);more.forEach(x=>{if(x!==
 function pctOpts(a){let x=["6.25","10","12.5","15","16.67","20","25","30","33.33","37.5","40","45","50","60","62.5","66.67","70","75","80","87.5","90"];return sh([a,...x.filter(v=>v!==a)]).slice(0,4)}
 function fracOpts(a){let x=["1/2","1/3","1/4","1/5","1/6","1/8","1/10","3/4","2/3","3/5","4/5","5/8","7/8"];return sh([a,...x.filter(v=>v!==a)]).slice(0,4)}
 function q(expr,ans,exp,skill,diff="Easy",options=null){return{expr,ans:String(ans),exp,skill,diff,options:options?options.map(String):null}}
+function actualSolution(expr, ans, skill) {
+  const e = String(expr).replace(/−/g,"-").replace(/×/g,"*").replace(/÷/g,"/").trim();
+  const A = String(ans);
+  let steps = [];
+
+  // Percentage + arithmetic patterns: show the actual intermediate values.
+  const pctRe = /(\d+(?:\.\d+)?)%\s*of\s*(\d+(?:\.\d+)?)/i;
+  const pm = e.match(pctRe);
+  if (pm) {
+    const p = Number(pm[1]), base = Number(pm[2]), value = p * base / 100;
+    const known = ({"12.5":"1/8","16.6666666667":"1/6","20":"1/5","25":"1/4","33.3333333333":"1/3","37.5":"3/8","40":"2/5","50":"1/2","60":"3/5","62.5":"5/8","66.6666666667":"2/3","75":"3/4","80":"4/5"})[String(p)];
+    if (known) steps.push(`${p}% = ${known}`, `${base} × ${known} = ${fmtCalc(value)}`);
+    else steps.push(`${p}% of ${base} = (${p}/100) × ${base} = ${fmtCalc(value)}`);
+  }
+
+  // Fraction + decimal inside brackets, then multiplication/division.
+  const fd = e.match(/\(\s*(\d+)\/(\d+)\s*([+\-])\s*(0?\.\d+|\d+\.\d+)\s*\)\s*([*\/])\s*(\d+(?:\.\d+)?)/);
+  if (fd) {
+    const n=Number(fd[1]), d=Number(fd[2]), dec=Number(fd[4]), op=fd[3], outer=Number(fd[6]);
+    const f=n/d, inner=op==='+'?f+dec:f-dec, result=fd[5]==='*'?inner*outer:inner/outer;
+    steps=[`${n}/${d} = ${fmtCalc(f)}`,`${fmtCalc(f)} ${op} ${fmtCalc(dec)} = ${fmtCalc(inner)}`,`${fmtCalc(inner)} ${fd[5]==='*'?'×':'÷'} ${fmtCalc(outer)} = ${fmtCalc(result)}`];
+  }
+
+  // Simple percentage-free arithmetic with BODMAS. Split into useful intermediate terms.
+  if (!steps.length && /^[0-9.()\s+\-*/]+$/.test(e)) {
+    let t=e.replace(/\s+/g,'');
+    // Resolve parenthesised two-term expressions first.
+    const par=t.match(/^\(([-+]?\d+(?:\.\d+)?)\/([-+]?\d+(?:\.\d+)?)\s*([+\-])\s*([-+]?\d+(?:\.\d+)?)\)\s*([*\/])\s*([-+]?\d+(?:\.\d+)?)$/);
+    if(par){
+      const left=Number(par[1])/Number(par[2]), right=Number(par[4]);
+      const inner=par[3]==='+'?left+right:left-right, out=par[5]==='*'?inner*Number(par[6]):inner/Number(par[6]);
+      steps=[`${par[1]}/${par[2]} = ${fmtCalc(left)}`,`${fmtCalc(left)} ${par[3]} ${fmtCalc(right)} = ${fmtCalc(inner)}`,`${fmtCalc(inner)} ${par[5]==='*'?'×':'÷'} ${par[6]} = ${fmtCalc(out)}`];
+    } else {
+      // Handle a ×/÷ b +/− c style expression.
+      const m=t.match(/^([-+]?\d+(?:\.\d+)?)([*\/])([-+]?\d+(?:\.\d+)?)([+\-])([-+]?\d+(?:\.\d+)?)$/);
+      if(m){
+        const first=m[2]==='*'?Number(m[1])*Number(m[3]):Number(m[1])/Number(m[3]);
+        const out=m[4]==='+'?first+Number(m[5]):first-Number(m[5]);
+        steps=[`${m[1]} ${m[2]==='*'?'×':'÷'} ${m[3]} = ${fmtCalc(first)}`,`${fmtCalc(first)} ${m[4]} ${m[5]} = ${fmtCalc(out)}`];
+      }
+    }
+  }
+
+  // Roots and powers: expose the actual value before continuing.
+  const root = e.match(/√(\d+)/);
+  if (root && !steps.length) {
+    const n=Number(root[1]), r=Math.sqrt(n);
+    steps.push(`√${n} = ${fmtCalc(r)}`);
+  }
+  const power = e.match(/(\d+)\^(\d+)|(?<![A-Za-z])(?:(\d+))²/);
+  if (power && !steps.length) {
+    const base=Number(power[1]||power[3]), ex=Number(power[2]||2), v=Math.pow(base,ex);
+    steps.push(`${base}${ex===2?'²':'^'+ex} = ${fmtCalc(v)}`);
+  }
+
+  if (steps.length) steps.push(`Answer = ${A}.`);
+  return steps;
+}
+function fmtCalc(n){ return Number.isInteger(n) ? String(n) : String(Number(n.toFixed(6))); }
+
 function coachFor(skill,expr,ans,exp){
  const k=skill||""; let m;
  const arithmetic = [];
@@ -277,12 +337,13 @@ function render(){
  const isMC=S.level&&S.level.id>=2;
  const body=isMC
   ? `<div class="options">${q.options.map((o,j)=>`<button type="button" class="option ${chosen===o?"selected":""}" onclick="choose('${o.replace(/'/g,"\\'")}')"><span class="radio"></span><span>${String.fromCharCode(65+j)}</span><b>${o}</b></button>`).join("")}</div>`
-  : `<div class="answer-box">${chosen??""}<span class="cursor">|</span></div><div class="keypad">${["1","2","3","4","5","6","7","8","9","0","/","."].map(k=>`<button type="button" onclick="key('${k}')">${k}</button>`).join("")}</div><div class="pad-actions"><button type="button" class="secondary" onclick="clearAns()">Clear</button><button type="button" class="secondary" onclick="backspace()">⌫</button></div>`;
+  : `<div class="answer-input-wrap"><label for="answerInput" class="answer-input-label">Your answer</label><input id="answerInput" class="answer-input" type="text" inputmode="decimal" enterkeyhint="done" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="${String(chosen??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;")}" oninput="typedAnswer(this.value)" aria-label="Enter your answer" placeholder="Type or write with your stylus / Apple Pencil"><div class="input-help">✍️ Type, use Apple Pencil Scribble, or write with a supported stylus</div></div><div class="keypad">${["1","2","3","4","5","6","7","8","9","0","/","."].map(k=>`<button type="button" onclick="key('${k}')">${k}</button>`).join("")}</div><div class="pad-actions"><button type="button" class="secondary" onclick="clearAns()">Clear</button><button type="button" class="secondary" onclick="backspace()">⌫</button></div>`;
  screen.innerHTML=`<div class="topline"><span class="pill">QUESTION ${S.i+1}/${S.qs.length}</span><b id="clock">${fmt(remain())}</b></div><div class="bar"><i style="width:${S.i/S.qs.length*100}%"></i></div><section class="question"><div class="timer-note">⏱ <b id="clock2">${fmt(remain())}</b> remaining</div><div class="expr">${q.expr}</div>${body}<div class="row"><button class="secondary" onclick="prev()" ${S.i===0?"disabled":""}>← Previous</button><button class="primary" onclick="${S.i===S.qs.length-1?"submit(false)":"next()"}">${S.i===S.qs.length-1?"SUBMIT TEST":"Next →"}</button></div><div class="small center">${isMC?"Choose one option • No instant feedback":"Enter your answer • No instant feedback"}</div></section>`}
 function choose(v){S.answers[S.i]=v;render()}
-function key(k){let a=S.answers[S.i]||"";if(k==="/"&&a.includes("/"))return;if(k==="."&&a.includes(".")&&a.includes("/"))return;S.answers[S.i]=a+k;render()}
-function clearAns(){S.answers[S.i]=null;render()}
-function backspace(){let a=S.answers[S.i]||"";S.answers[S.i]=a.slice(0,-1)||null;render()}
+function typedAnswer(v){v=String(v||"").replace(/[^0-9.\/-]/g,"");let slash=v.indexOf("/");if(slash!==-1){v=v.slice(0,slash+1)+v.slice(slash+1).replace(/\//g,"");}let dots=(v.match(/\./g)||[]).length;if(dots>1){let first=v.indexOf(".");v=v.slice(0,first+1)+v.slice(first+1).replace(/\./g,"");}S.answers[S.i]=v||null;let el=document.getElementById("answerInput");if(el&&el.value!==v)el.value=v}
+function key(k){let el=document.getElementById("answerInput");let a=(el?el.value:(S.answers[S.i]||""));if(k==="/"&&a.includes("/"))return;if(k==="."&&a.includes("."))return;let v=a+k;typedAnswer(v);if(el){el.focus();try{el.setSelectionRange(el.value.length,el.value.length)}catch(e){}}}
+function clearAns(){typedAnswer("");let el=document.getElementById("answerInput");if(el){el.focus()}}
+function backspace(){let el=document.getElementById("answerInput");let a=el?el.value:(S.answers[S.i]||"");typedAnswer(a.slice(0,-1));if(el){el.focus();try{el.setSelectionRange(el.value.length,el.value.length)}catch(e){}}}
 function recordQuestionTime(){if(S.view!=="quiz"||!S.qStartedAt)return;S.qTimes[S.i]=(S.qTimes[S.i]||0)+(Date.now()-S.qStartedAt)/1000;S.qStartedAt=Date.now()}
 function next(){if(S.i<S.qs.length-1){recordQuestionTime();S.i++;render()}}
 function prev(){if(S.i>0){recordQuestionTime();S.i--;render()}}
@@ -368,16 +429,15 @@ function renderInsights(){
 }
 
 function renderResult(elapsed,c,w,u,marks,auto){
-  S.view="result";
   recordDailyResult(elapsed,c,w,u,marks);
  const attempted=c+w, avg=attempted?elapsed/attempted:0, pace=elapsed/S.limit<.65?"Fast":elapsed/S.limit<.9?"Good":"Needs improvement";
  const coach=aiCoach(elapsed);
  screen.innerHTML=`<section class="result-hero"><div class="result-top"><div><span class="pill">${auto?"TIME UP":"TEST SUBMITTED"}</span><h1>${marks.toFixed(2)} <span>/ ${S.qs.length}</span></h1><p>${c} correct <i>•</i> ${w} wrong <i>•</i> ${u} unanswered</p></div><div class="score-ring"><strong>${Math.round(c/S.qs.length*100)}%</strong><span>accuracy</span></div></div><div class="result-stats"><div class="result-stat"><strong>${fmt(elapsed)}</strong><span>Time used</span></div><div class="result-stat"><strong>${fmt(avg)}</strong><span>Avg / attempt</span></div><div class="result-stat"><strong>${fmt(Math.max(0,S.limit-elapsed))}</strong><span>Time left</span></div></div><div class="pace-card"><div><span class="pace-label">TIME MANAGEMENT</span><strong>${pace}</strong></div><div class="pace-track"><i style="width:${Math.min(100,Math.round(elapsed/S.limit*100))}%"></i></div><span class="pace-percent">${Math.round(elapsed/S.limit*100)}% of allotted time used</span></div></section>
  <section class="test-insights"><div class="insight-card-head"><div><span class="pill">PERFORMANCE INSIGHTS</span><h2>This test at a glance</h2><p>A visual report of accuracy, attempts and where your marks came from.</p></div><strong class="insight-score">${Math.round(c/S.qs.length*100)}%</strong></div><div class="test-insight-grid"><div class="test-pie">${pieMarkup(c,w,u)}</div><div><div class="mini-metric"><span>Accuracy</span><b>${Math.round(c/S.qs.length*100)}%</b></div><div class="mini-metric"><span>Attempt rate</span><b>${Math.round(attempted/S.qs.length*100)}%</b></div><div class="mini-metric"><span>Correct / minute</span><b>${elapsed>0?(c/(elapsed/60)).toFixed(1):"0.0"}</b></div><div class="mini-metric"><span>Avg time / attempt</span><b>${fmt(avg)}</b></div></div></div><div class="topic-performance"><h3>Section performance</h3>${currentTopicStats().map(t=>`<div class="topic-row"><span>${t.topic}</span><div><i style="width:${t.accuracy}%"></i></div><b>${t.accuracy}%</b></div>`).join("")}</div></section>
  <section class="ai-coach"><div class="ai-head"><div><span class="pill">AI COACH</span><h2>How you spent your time</h2><p>Personalised feedback from your accuracy and question-by-question timing.</p></div><span class="coach-badge">SMART REVIEW</span></div><div class="coach-insights">${coach.insights.map((x,i)=>`<div class="coach-insight"><span>${i+1}</span><p>${x}</p></div>`).join("")}</div>${coach.slow.length?`<div class="slowest"><h3>Slowest attempts</h3><div class="slow-grid">${coach.slow.map(x=>`<button class="slow-card" onclick="document.getElementById('review-${x.i}').scrollIntoView({behavior:'smooth',block:'center'})"><b>Q${x.i+1}</b><span>${fmt(x.t)}</span><small>${x.ok?"Correct":x.a===null?"Unanswered":"Wrong"}</small></button>`).join("")}</div></div>`:""}</section>
- <div class="review-heading"><div><h2>Answer Review</h2><p>Answer, correct answer, time spent and the best approach.</p></div><span>${S.qs.length} questions</span></div><div class="analysis">${S.qs.map((q,i)=>{let a=S.answers[i],ok=answerCorrect(q,a),status=ok?"Correct":a===null?"Unanswered":"Wrong",m=q.coach||coachFor(q.skill,q.expr,q.ans,q.exp);return`<article id="review-${i}" class="review ${ok?"ok":a===null?"skip":"bad"}"><div class="review-head"><strong>Q${i+1}</strong><span class="status ${ok?"ok":a===null?"skip":"bad"}">${status}</span><span class="review-time">${fmt(S.qTimes[i]||0)}</span></div><div class="review-expr">${q.expr}</div><div class="answer-line"><div><span>Your answer</span><b>${a??"—"}</b></div><div><span>Correct answer</span><b>${q.ans}</b></div></div><div class="time-line">Time spent <strong>${fmt(S.qTimes[i]||0)}</strong></div><div class="highlight-line"><span>⚡ Highlight</span><p>${m.highlight||"Use the shortest pattern-based route."}</p></div><details class="solution"><summary>View solution, approach & shortcut</summary><div class="solution-body"><div><strong>Best approach</strong><p>${m.approach}</p></div><div><strong>Shortcut</strong><p>${m.shortcut}</p></div><div><strong>Quick methods</strong><ul class="quick-methods">${(m.quickMethods||[]).map(st=>`<li>${st}</li>`).join("")}</ul></div><div><strong>Detailed solution</strong>${m.steps.map(st=>`<p>${st}</p>`).join("")}</div></div></details></article>`}).join("")}</div><div class="row end"><button class="primary" onclick="setup('${S.topic}',S.subtopic)">Practice Again</button><button class="secondary" onclick="level(${S.level?.id||1})">Back</button></div>`}
+ <div class="review-heading"><div><h2>Answer Review</h2><p>Answer, correct answer, time spent and the best approach.</p></div><span>${S.qs.length} questions</span></div><div class="analysis">${S.qs.map((q,i)=>{let a=S.answers[i],ok=answerCorrect(q,a),status=ok?"Correct":a===null?"Unanswered":"Wrong",m=q.coach||coachFor(q.skill,q.expr,q.ans,q.exp);m={...m,steps:actualSolution(q.expr,q.ans,q.skill).length?actualSolution(q.expr,q.ans,q.skill):m.steps};return`<article id="review-${i}" class="review ${ok?"ok":a===null?"skip":"bad"}"><div class="review-head"><strong>Q${i+1}</strong><span class="status ${ok?"ok":a===null?"skip":"bad"}">${status}</span><span class="review-time">${fmt(S.qTimes[i]||0)}</span></div><div class="review-expr">${q.expr}</div><div class="answer-line"><div><span>Your answer</span><b>${a??"—"}</b></div><div><span>Correct answer</span><b>${q.ans}</b></div></div><div class="time-line">Time spent <strong>${fmt(S.qTimes[i]||0)}</strong></div><div class="highlight-line"><span>⚡ Highlight</span><p>${m.highlight||"Use the shortest pattern-based route."}</p></div><details class="solution"><summary>View solution, approach & shortcut</summary><div class="solution-body"><div><strong>Best approach</strong><p>${m.approach}</p></div><div><strong>Shortcut</strong><p>${m.shortcut}</p></div><div><strong>Quick methods</strong><ul class="quick-methods">${(m.quickMethods||[]).map(st=>`<li>${st}</li>`).join("")}</ul></div><div><strong>Detailed solution</strong>${m.steps.map(st=>`<p>${st}</p>`).join("")}</div></div></details></article>`}).join("")}</div><div class="row end"><button class="primary" onclick="setup('${S.topic}',S.subtopic)">Practice Again</button><button class="secondary" onclick="level(${S.level?.id||1})">Back</button></div>`}
 
-back.onclick=()=>{if(S.view==="quiz"){if(confirm("Leave this test? Your answers will be lost.")){stop();level(S.level.id)}return}if(S.view==="result"){stop();level(S.level.id);return}if(S.view==="setup"||S.view==="tablePicker"||S.view==="numberPicker"){level(S.level.id);return}if(S.view==="level"||S.view==="insights")home();else home()}
+back.onclick=()=>{if(S.view==="quiz"){if(confirm("Leave this test? Your answers will be lost.")){stop();level(S.level.id)}return}if(S.view==="setup"||S.view==="tablePicker"||S.view==="numberPicker"){level(S.level.id);return}if(S.view==="level"||S.view==="insights")home();else home()}
 home();if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 
 // ==================================================
