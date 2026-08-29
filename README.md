@@ -52,3 +52,12 @@ Section and topic labels are not displayed in the result review.
 ## PWA
 
 The app includes a manifest and service worker for installable/offline-capable use when hosted as a static site.
+
+## V9 Moderate AI Coach + compact review
+Moderate results now include:
+- detailed per-question solution and shortcut/approach guidance
+- question-by-question time analysis
+- personalised AI Coach + compact review-style time-management feedback
+- slowest-attempt highlights that jump to the relevant review item
+
+The coaching is computed locally from performance and timing data; no answer data is sent to a third-party AI service.
