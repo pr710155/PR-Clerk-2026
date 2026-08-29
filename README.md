@@ -44,15 +44,6 @@ There is deliberately **no timer or time-management feature** in Level 1.
 Each practice set contains 10 questions, gives immediate feedback/explanation, and saves overall question count and best accuracy locally.
 
 
-## V2.1 — Blind test behavior
-- No immediate answer feedback during a test.
-- No topic, skill, Easy/Moderate/Hard label shown while answering.
-- Submit the test first; only then are answers, explanations and difficulty/topic classifications revealed.
-- Added a 20-question Full Blind Test mixing Easy, Moderate and Hard generators.
-- Level-specific tests also reveal analysis only after submission.
-- No timer.
-
-
 ## V2.2 — Easy expansion + real test mode
 - Easy now has Tables, Squares (1–60), Cubes (1–30), Percentage Values, Fractions, Number Games, and Mixed Set.
 - Number Games trains progressively varied addition/subtraction sizes plus mental multiplication and division.
@@ -64,7 +55,6 @@ Each practice set contains 10 questions, gives immediate feedback/explanation, a
 - Easy Mixed Set: 20 questions / 8 minutes.
 - Number Games: 20 questions / 6 minutes.
 - Other topic tests: 10 questions / 4 minutes.
-- Full Blind Test: 30 questions / 15 minutes, mixed across all levels.
 
 
 ## V3 — Final Easy input and timed testing
@@ -75,3 +65,13 @@ Each practice set contains 10 questions, gives immediate feedback/explanation, a
 - Mixed Set surprises the learner with all Easy subsections.
 - No answer/topic/difficulty feedback during the test.
 - Timed tests report marks, correct/wrong/unanswered, time used, average time, time left and time-management assessment after submission.
+
+
+## Current behavior
+- No Full Blind Test.
+- Easy subsections use parent-style cards, not checkboxes.
+- Tables: choose any table from 6–30.
+- Number Games: choose Addition, Subtraction, Multiplication, or Division.
+- Easy questions use a 0–9, slash, and decimal-point keypad.
+- No instant right/wrong feedback; answers are revealed only after submitting.
+- Results show score, time management, each answer, correct answer, and time spent; section/topic labels are not shown.
