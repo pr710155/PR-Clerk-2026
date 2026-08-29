@@ -1,24 +1,3 @@
-# PR Clerk 2026 V23 — Quadratic Expansion
+# PR CLERK 2026 — V25 Quadratic Fix
 
-Quadratic Equations are now generated from 16 varied Moderate families and 8 Hard families.
-
-Moderate families include:
-- larger-root comparison
-- smaller-root comparison
-- sum-of-roots comparison
-- product-of-roots comparison
-- α²+β²
-- 1/α+1/β
-- known-root relation
-- equal roots / discriminant
-- root difference → larger root
-- root difference → smaller root
-- (α−β)²
-- S²/P
-- S−P
-- two-equation comparison of derived root expressions
-- comparison of root differences
-
-Hard families add parameter, discriminant and multi-relation questions.
-
-Quadratic questions no longer use A/B/C/D options. Answers are entered directly.
+Moderate Quadratic is root-comparison only. Equation families include x²±bx±c, non-monic/common-factor forms, decimal coefficients, and square/cube/root disguises. The test UI remains answer-entry based (no A/B/C/D labels). Result-page navigation no longer triggers the quiz-exit confirmation.
