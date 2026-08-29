@@ -129,3 +129,36 @@ header .muted{font-size:14px;font-weight:650;letter-spacing:.02em}
 .answer-input::placeholder{font-size:14px;font-weight:650;color:#9aa3b4}
 .input-help{margin-top:7px;text-align:left;font-size:11px;line-height:1.35;color:#7b8496}
 @media(max-width:500px){.answer-input{font-size:25px;min-height:62px}.answer-input::placeholder{font-size:12px}}
+
+/* V22 — clean answer input + attractive solution cards */
+.answer-input-wrap{max-width:520px;margin:20px auto 12px}
+.answer-input{display:block;width:100%;min-height:76px;resize:none;border:2px solid #d6ddec;border-radius:18px;background:#fbfcff;color:var(--ink);font:800 30px/1.25 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;text-align:center;padding:17px 18px;box-sizing:border-box;outline:none;caret-color:#5268d9;touch-action:manipulation;-webkit-user-select:text;user-select:text;-webkit-appearance:none;appearance:none}
+.answer-input:focus{border-color:#6879dd;box-shadow:0 0 0 5px #6879dd1c;background:#fff}
+.answer-input::placeholder{font-size:14px;font-weight:700;color:#98a1b3}
+.answer-input-label{text-align:center!important;margin-bottom:8px!important}
+.input-help{text-align:center!important;font-size:11px;line-height:1.4;color:#7a8497}
+.symbol-pad{max-width:520px;margin:8px auto 4px;display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.symbol-pad button{min-height:45px;border:1px solid #dce2ed;border-radius:12px;background:#fff;font-size:18px;font-weight:850;color:#34415d;box-shadow:0 3px 9px #3040700c}
+.symbol-pad button:active,.keypad button:active{transform:scale(.97)}
+
+/* Make the expanded explanation feel like a compact coaching sheet. */
+.solution[open]{background:#f8f9fc;border-radius:16px;padding:0 0 12px}
+.solution[open] summary{border-color:#ccd5f2;background:linear-gradient(135deg,#f5f7ff,#eef2ff);font-weight:850}
+.solution-body{gap:10px!important;padding:10px 10px 0!important}
+.solution-panel{border:1px solid #e3e7f0;border-radius:16px!important;padding:13px 14px!important;box-shadow:0 4px 14px rgba(40,55,95,.045)}
+.solution-label{font-size:10px;font-weight:950;letter-spacing:.07em;text-transform:uppercase;color:#5b68a9;margin-bottom:6px}
+.solution-panel p{font-size:13px!important;line-height:1.48!important;color:#46536a!important}
+.approach-panel{background:#f4f6ff!important}
+.shortcut-panel{background:#f8f7ff!important}
+.working-panel{background:#fff!important}
+.methods-panel{background:#f8fafc!important}
+.step-stack{display:grid;gap:7px;margin-top:8px}
+.step-card{display:grid;grid-template-columns:28px 1fr;gap:9px;align-items:start;padding:9px 10px;border-radius:12px;background:#f7f8fb;border:1px solid #e8ebf2}
+.step-card>span{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:#e9edff;color:#4e61c2;font-size:11px;font-weight:950}
+.step-card p{margin:2px 0 0!important;font-size:14px!important;font-weight:650;color:#34415a!important}
+.method-chips{display:flex;flex-wrap:wrap;gap:7px}
+.method-chips span{padding:7px 9px;border-radius:999px;background:#fff;border:1px solid #e1e5ed;color:#59657a;font-size:10px;font-weight:700;line-height:1.3}
+
+/* Never show MCQ letter markers if an old cached/generated option set exists. */
+.options,.option{display:none!important}
+@media(max-width:500px){.answer-input{min-height:68px;font-size:26px}.symbol-pad{gap:6px}.symbol-pad button{min-height:42px}.solution-panel{padding:12px!important}}

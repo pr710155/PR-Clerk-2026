@@ -297,6 +297,7 @@ function make(topic,subtopic=null){
  if(topic==="quadratic")return moderateQuadratic();
  if(topic==="missingSeries")return moderateSeries(false);
  if(topic==="wrongSeries")return moderateSeries(true);
+ if(topic==="hardquad")return advancedQuadratic();
  if(topic==="blindfold")return moderateBlindfold();
  return q("Choose a Moderate topic to begin.","","Moderate practice.");
 }
@@ -334,21 +335,45 @@ function fmt(s){s=Math.max(0,Math.round(Number(s)||0));return`${Math.floor(s/60)
 function render(){
  let q=S.qs[S.i],chosen=S.answers[S.i];
  if(!S.qStartedAt)S.qStartedAt=Date.now();
- const isMC=S.level&&S.level.id>=2;
- const body=isMC
-  ? `<div class="options">${q.options.map((o,j)=>`<button type="button" class="option ${chosen===o?"selected":""}" onclick="choose('${o.replace(/'/g,"\\'")}')"><span class="radio"></span><span>${String.fromCharCode(65+j)}</span><b>${o}</b></button>`).join("")}</div>`
-  : `<div class="answer-input-wrap"><label for="answerInput" class="answer-input-label">Your answer</label><input id="answerInput" class="answer-input" type="text" inputmode="decimal" enterkeyhint="done" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="${String(chosen??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;")}" oninput="typedAnswer(this.value)" aria-label="Enter your answer" placeholder="Type or write with your stylus / Apple Pencil"><div class="input-help">✍️ Type, use Apple Pencil Scribble, or write with a supported stylus</div></div><div class="keypad">${["1","2","3","4","5","6","7","8","9","0","/","."].map(k=>`<button type="button" onclick="key('${k}')">${k}</button>`).join("")}</div><div class="pad-actions"><button type="button" class="secondary" onclick="clearAns()">Clear</button><button type="button" class="secondary" onclick="backspace()">⌫</button></div>`;
+ const isMC=false;
+ const isQuadratic=q.skill==="Quadratic Equations";
+ const safeValue=String(chosen??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;");
+ const body=`<div class="answer-input-wrap"><label for="answerInput" class="answer-input-label">Your answer</label><textarea id="answerInput" class="answer-input" rows="1" inputmode="text" enterkeyhint="done" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Enter your answer" placeholder="Tap here and write with Apple Pencil / stylus">${safeValue}</textarea><div class="input-help">✍️ Handwriting/Scribble supported • typing and keypad also available</div></div><div class="keypad">${["1","2","3","4","5","6","7","8","9","0","/","."].map(k=>`<button type="button" onclick="key('${k}')">${k}</button>`).join("")}</div>${isQuadratic?`<div class="symbol-pad"><button type="button" onclick="key('x')">x</button><button type="button" onclick="key('>')">&gt;</button><button type="button" onclick="key('<')">&lt;</button><button type="button" onclick="key('=')">=</button><button type="button" onclick="key('≥')">≥</button><button type="button" onclick="key('≤')">≤</button></div>`:""}<div class="pad-actions"><button type="button" class="secondary" onclick="clearAns()">Clear</button><button type="button" class="secondary" onclick="backspace()">⌫</button></div>`;
  screen.innerHTML=`<div class="topline"><span class="pill">QUESTION ${S.i+1}/${S.qs.length}</span><b id="clock">${fmt(remain())}</b></div><div class="bar"><i style="width:${S.i/S.qs.length*100}%"></i></div><section class="question"><div class="timer-note">⏱ <b id="clock2">${fmt(remain())}</b> remaining</div><div class="expr">${q.expr}</div>${body}<div class="row"><button class="secondary" onclick="prev()" ${S.i===0?"disabled":""}>← Previous</button><button class="primary" onclick="${S.i===S.qs.length-1?"submit(false)":"next()"}">${S.i===S.qs.length-1?"SUBMIT TEST":"Next →"}</button></div><div class="small center">${isMC?"Choose one option • No instant feedback":"Enter your answer • No instant feedback"}</div></section>`}
 function choose(v){S.answers[S.i]=v;render()}
-function typedAnswer(v){v=String(v||"").replace(/[^0-9.\/-]/g,"");let slash=v.indexOf("/");if(slash!==-1){v=v.slice(0,slash+1)+v.slice(slash+1).replace(/\//g,"");}let dots=(v.match(/\./g)||[]).length;if(dots>1){let first=v.indexOf(".");v=v.slice(0,first+1)+v.slice(first+1).replace(/\./g,"");}S.answers[S.i]=v||null;let el=document.getElementById("answerInput");if(el&&el.value!==v)el.value=v}
-function key(k){let el=document.getElementById("answerInput");let a=(el?el.value:(S.answers[S.i]||""));if(k==="/"&&a.includes("/"))return;if(k==="."&&a.includes("."))return;let v=a+k;typedAnswer(v);if(el){el.focus();try{el.setSelectionRange(el.value.length,el.value.length)}catch(e){}}}
-function clearAns(){typedAnswer("");let el=document.getElementById("answerInput");if(el){el.focus()}}
-function backspace(){let el=document.getElementById("answerInput");let a=el?el.value:(S.answers[S.i]||"");typedAnswer(a.slice(0,-1));if(el){el.focus();try{el.setSelectionRange(el.value.length,el.value.length)}catch(e){}}}
+function typedAnswer(v){
+  v=String(v??"").replace(/[^0-9.\/-xX<>=≤≥\s]/g,"");
+  const slash=v.indexOf("/");
+  if(slash!==-1)v=v.slice(0,slash+1)+v.slice(slash+1).replace(/\//g,"");
+  let dots=(v.match(/\./g)||[]).length;
+  if(dots>1){let first=v.indexOf(".");v=v.slice(0,first+1)+v.slice(first+1).replace(/\./g,"");}
+  S.answers[S.i]=v.trim()||null;
+  const el=document.getElementById("answerInput");
+  if(el&&el.value!==v)el.value=v;
+}
+function key(k){
+  const el=document.getElementById("answerInput");
+  let a=el?el.value:(S.answers[S.i]||"");
+  if(k==="/"&&a.includes("/"))return;
+  if(k==="."&&a.includes("."))return;
+  const v=a+k; typedAnswer(v);
+  if(el){el.focus();try{el.setSelectionRange(el.value.length,el.value.length)}catch(e){}}
+}
+function clearAns(){typedAnswer("");let el=document.getElementById("answerInput");if(el)el.focus()}
+function backspace(){let el=document.getElementById("answerInput"),a=el?el.value:(S.answers[S.i]||"");typedAnswer(a.slice(0,-1));if(el){el.focus();try{el.setSelectionRange(el.value.length,el.value.length)}catch(e){}}}
 function recordQuestionTime(){if(S.view!=="quiz"||!S.qStartedAt)return;S.qTimes[S.i]=(S.qTimes[S.i]||0)+(Date.now()-S.qStartedAt)/1000;S.qStartedAt=Date.now()}
 function next(){if(S.i<S.qs.length-1){recordQuestionTime();S.i++;render()}}
 function prev(){if(S.i>0){recordQuestionTime();S.i--;render()}}
 function numericEqual(a,b){return Math.abs(Number(a)-Number(b))<1e-9}
-function answerCorrect(q,a){if(a===null)return false;if(q.skill.startsWith("Percentage →"))return a===q.ans;if(q.skill.startsWith("Fraction →"))return numericEqual(a,q.ans);return a===q.ans}
+function answerCorrect(q,a){
+ if(a===null)return false;
+ const norm=v=>String(v??"").trim().replace(/\s+/g," ").replace(/≥/g,">=").replace(/≤/g,"<=").replace(/−/g,"-").toLowerCase();
+ const aa=norm(a),bb=norm(q.ans);
+ if(q.skill.startsWith("Percentage →"))return aa===bb;
+ if(q.skill.startsWith("Fraction →"))return numericEqual(aa,bb);
+ if(q.skill==="Quadratic Equations")return aa===bb;
+ return aa===bb || numericEqual(aa,bb);
+}
 function submit(auto){if(S.view!=="quiz")return;recordQuestionTime();stop();let elapsed=Math.min(S.limit,(Date.now()-S.start)/1000),correct=0,wrong=0,un=0;S.qs.forEach((q,i)=>{if(S.answers[i]===null)un++;else if(answerCorrect(q,S.answers[i]))correct++;else wrong++});let marks=correct-wrong*.25;renderResult(elapsed,correct,wrong,un,marks,auto)}
 function aiCoach(elapsed){
  const rows=S.qs.map((q,i)=>({q,i,t:S.qTimes[i]||0,a:S.answers[i],ok:answerCorrect(q,S.answers[i])}));
@@ -435,7 +460,7 @@ function renderResult(elapsed,c,w,u,marks,auto){
  screen.innerHTML=`<section class="result-hero"><div class="result-top"><div><span class="pill">${auto?"TIME UP":"TEST SUBMITTED"}</span><h1>${marks.toFixed(2)} <span>/ ${S.qs.length}</span></h1><p>${c} correct <i>•</i> ${w} wrong <i>•</i> ${u} unanswered</p></div><div class="score-ring"><strong>${Math.round(c/S.qs.length*100)}%</strong><span>accuracy</span></div></div><div class="result-stats"><div class="result-stat"><strong>${fmt(elapsed)}</strong><span>Time used</span></div><div class="result-stat"><strong>${fmt(avg)}</strong><span>Avg / attempt</span></div><div class="result-stat"><strong>${fmt(Math.max(0,S.limit-elapsed))}</strong><span>Time left</span></div></div><div class="pace-card"><div><span class="pace-label">TIME MANAGEMENT</span><strong>${pace}</strong></div><div class="pace-track"><i style="width:${Math.min(100,Math.round(elapsed/S.limit*100))}%"></i></div><span class="pace-percent">${Math.round(elapsed/S.limit*100)}% of allotted time used</span></div></section>
  <section class="test-insights"><div class="insight-card-head"><div><span class="pill">PERFORMANCE INSIGHTS</span><h2>This test at a glance</h2><p>A visual report of accuracy, attempts and where your marks came from.</p></div><strong class="insight-score">${Math.round(c/S.qs.length*100)}%</strong></div><div class="test-insight-grid"><div class="test-pie">${pieMarkup(c,w,u)}</div><div><div class="mini-metric"><span>Accuracy</span><b>${Math.round(c/S.qs.length*100)}%</b></div><div class="mini-metric"><span>Attempt rate</span><b>${Math.round(attempted/S.qs.length*100)}%</b></div><div class="mini-metric"><span>Correct / minute</span><b>${elapsed>0?(c/(elapsed/60)).toFixed(1):"0.0"}</b></div><div class="mini-metric"><span>Avg time / attempt</span><b>${fmt(avg)}</b></div></div></div><div class="topic-performance"><h3>Section performance</h3>${currentTopicStats().map(t=>`<div class="topic-row"><span>${t.topic}</span><div><i style="width:${t.accuracy}%"></i></div><b>${t.accuracy}%</b></div>`).join("")}</div></section>
  <section class="ai-coach"><div class="ai-head"><div><span class="pill">AI COACH</span><h2>How you spent your time</h2><p>Personalised feedback from your accuracy and question-by-question timing.</p></div><span class="coach-badge">SMART REVIEW</span></div><div class="coach-insights">${coach.insights.map((x,i)=>`<div class="coach-insight"><span>${i+1}</span><p>${x}</p></div>`).join("")}</div>${coach.slow.length?`<div class="slowest"><h3>Slowest attempts</h3><div class="slow-grid">${coach.slow.map(x=>`<button class="slow-card" onclick="document.getElementById('review-${x.i}').scrollIntoView({behavior:'smooth',block:'center'})"><b>Q${x.i+1}</b><span>${fmt(x.t)}</span><small>${x.ok?"Correct":x.a===null?"Unanswered":"Wrong"}</small></button>`).join("")}</div></div>`:""}</section>
- <div class="review-heading"><div><h2>Answer Review</h2><p>Answer, correct answer, time spent and the best approach.</p></div><span>${S.qs.length} questions</span></div><div class="analysis">${S.qs.map((q,i)=>{let a=S.answers[i],ok=answerCorrect(q,a),status=ok?"Correct":a===null?"Unanswered":"Wrong",m=q.coach||coachFor(q.skill,q.expr,q.ans,q.exp);m={...m,steps:actualSolution(q.expr,q.ans,q.skill).length?actualSolution(q.expr,q.ans,q.skill):m.steps};return`<article id="review-${i}" class="review ${ok?"ok":a===null?"skip":"bad"}"><div class="review-head"><strong>Q${i+1}</strong><span class="status ${ok?"ok":a===null?"skip":"bad"}">${status}</span><span class="review-time">${fmt(S.qTimes[i]||0)}</span></div><div class="review-expr">${q.expr}</div><div class="answer-line"><div><span>Your answer</span><b>${a??"—"}</b></div><div><span>Correct answer</span><b>${q.ans}</b></div></div><div class="time-line">Time spent <strong>${fmt(S.qTimes[i]||0)}</strong></div><div class="highlight-line"><span>⚡ Highlight</span><p>${m.highlight||"Use the shortest pattern-based route."}</p></div><details class="solution"><summary>View solution, approach & shortcut</summary><div class="solution-body"><div><strong>Best approach</strong><p>${m.approach}</p></div><div><strong>Shortcut</strong><p>${m.shortcut}</p></div><div><strong>Quick methods</strong><ul class="quick-methods">${(m.quickMethods||[]).map(st=>`<li>${st}</li>`).join("")}</ul></div><div><strong>Detailed solution</strong>${m.steps.map(st=>`<p>${st}</p>`).join("")}</div></div></details></article>`}).join("")}</div><div class="row end"><button class="primary" onclick="setup('${S.topic}',S.subtopic)">Practice Again</button><button class="secondary" onclick="level(${S.level?.id||1})">Back</button></div>`}
+ <div class="review-heading"><div><h2>Answer Review</h2><p>Answer, correct answer, time spent and the best approach.</p></div><span>${S.qs.length} questions</span></div><div class="analysis">${S.qs.map((q,i)=>{let a=S.answers[i],ok=answerCorrect(q,a),status=ok?"Correct":a===null?"Unanswered":"Wrong",m=q.coach||coachFor(q.skill,q.expr,q.ans,q.exp);m={...m,steps:actualSolution(q.expr,q.ans,q.skill).length?actualSolution(q.expr,q.ans,q.skill):m.steps};return`<article id="review-${i}" class="review ${ok?"ok":a===null?"skip":"bad"}"><div class="review-head"><strong>Q${i+1}</strong><span class="status ${ok?"ok":a===null?"skip":"bad"}">${status}</span><span class="review-time">${fmt(S.qTimes[i]||0)}</span></div><div class="review-expr">${q.expr}</div><div class="answer-line"><div><span>Your answer</span><b>${a??"—"}</b></div><div><span>Correct answer</span><b>${q.ans}</b></div></div><div class="time-line">Time spent <strong>${fmt(S.qTimes[i]||0)}</strong></div><div class="highlight-line"><span>⚡ Highlight</span><p>${m.highlight||"Use the shortest pattern-based route."}</p></div><details class="solution"><summary>View solution, approach & shortcut</summary><div class="solution-body"><div class="solution-panel approach-panel"><div class="solution-label">⚡ BEST APPROACH</div><p>${m.approach}</p></div><div class="solution-panel shortcut-panel"><div class="solution-label">🚀 SHORTCUT</div><p>${m.shortcut}</p></div><div class="solution-panel working-panel"><div class="solution-label">🧮 ACTUAL WORKING</div><div class="step-stack">${(m.steps||[]).map((st,idx)=>`<div class="step-card"><span>${idx+1}</span><p>${st}</p></div>`).join("")}</div></div>${(m.quickMethods||[]).length?`<div class="solution-panel methods-panel"><div class="solution-label">💡 QUICK METHODS</div><div class="method-chips">${(m.quickMethods||[]).slice(0,4).map(st=>`<span>${st}</span>`).join("")}</div></div>`:""}</div></details></article>`}).join("")}</div><div class="row end"><button class="primary" onclick="setup('${S.topic}',S.subtopic)">Practice Again</button><button class="secondary" onclick="level(${S.level?.id||1})">Back</button></div>`}
 
 back.onclick=()=>{if(S.view==="quiz"){if(confirm("Leave this test? Your answers will be lost.")){stop();level(S.level.id)}return}if(S.view==="setup"||S.view==="tablePicker"||S.view==="numberPicker"){level(S.level.id);return}if(S.view==="level"||S.view==="insights")home();else home()}
 home();if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
@@ -1467,56 +1492,257 @@ function moderateSeries() {
 // ==================================================
 
 function moderateQuadratic() {
-  for (let attempt=0; attempt<120; attempt++) {
-    // Factorable, positive-root equations. The candidate compares the
-    // larger roots, matching a common Clerk Prelims quadratic-comparison style.
-    const r1a=R(3,18), r1b=R(2,22);
-    const r2a=R(3,18), r2b=R(2,22);
-    if(r1a===r1b || r2a===r2b) continue;
-
-    const s1=r1a+r1b, p1=r1a*r1b;
-    const s2=r2a+r2b, p2=r2a*r2b;
-    const x=Math.max(r1a,r1b), y=Math.max(r2a,r2b);
-
-    let ans;
-    if(x>y) ans="x > y";
-    else if(x<y) ans="x < y";
-    else ans="x = y";
-
-    const options=["x > y","x < y","x = y","x ≥ y","x ≤ y"];
-    const expr=`I. x² − ${s1}x + ${p1} = 0
-II. y² − ${s2}y + ${p2} = 0
-Compare x and y (take the larger root of each equation).`;
-
-    const exp=`I factors as (${r1a}, ${r1b}); larger root = ${x}. II factors as (${r2a}, ${r2b}); larger root = ${y}. Therefore ${ans}.`;
-    const z=mcq(expr,ans,exp,"Quadratic Equations",options.filter(o=>o!==ans));
-    z.options=options.sort(()=>Math.random()-.5);
-    z.coach={
-      highlight:"Factor first; compare the larger roots without using the quadratic formula.",
-      approach:"Look for two factors whose product is the constant term and whose sum is the middle coefficient. Then compare the larger roots.",
-      shortcut:"For x²−Sx+P=0, factorisation gives the roots directly. The exam is testing recognition, not the quadratic formula.",
-      steps:[
-        `Equation I: factors give roots ${r1a} and ${r1b}; larger root = ${x}.`,
-        `Equation II: factors give roots ${r2a} and ${r2b}; larger root = ${y}.`,
-        `Comparison: ${ans}.`
-      ],
-      quickMethods:[
-        "Try factorisation before formula.",
-        "For monic equations, product = constant and sum = coefficient magnitude.",
-        "Compare only the larger roots because that is what the question asks."
-      ]
-    };
+  // Quadratic bank: deliberately varied. This is NOT a single
+  // "x² − ax + b" / larger-root drill.  Each family tests a different
+  // root relation or quadratic property commonly useful in clerk exams.
+  const type=R(1,16);
+  const rel=(a,b)=>a>b?"x > y":a<b?"x < y":"x = y";
+  const qout=(expr,ans,highlight,approach,shortcut,steps,methods=[],meta={})=>{
+    const z=q(expr,ans,"", "Quadratic Equations", "Moderate", null);
+    z.coach={highlight,approach,shortcut,steps,quickMethods:methods};
+    z.meta={...(z.meta||{}),...meta};
+    z.options=null;
     return z;
+  };
+  const factor=(a,b)=>`(${a>0?a:`− ${Math.abs(a)}`})(${b>0?b:`− ${Math.abs(b)}`})`;
+  const eq=(A,B,C,v)=>{
+    const ap=A===1?`${v}²`:`${A}${v}²`;
+    const bp=B===0?"":` ${B>0?"+":"−"} ${Math.abs(B)}${v}`;
+    const cp=C===0?"":` ${C>0?"+":"−"} ${Math.abs(C)}`;
+    return `${ap}${bp}${cp} = 0`;
+  };
+
+  // 1–4: direct root-comparison families, but with different target relations.
+  if(type<=4){
+    const r1a=R(2,16), r1b=R(3,22), r2a=R(2,16), r2b=R(3,22);
+    if(r1a===r1b||r2a===r2b) return moderateQuadratic();
+    const s1=r1a+r1b,p1=r1a*r1b,s2=r2a+r2b,p2=r2a*r2b;
+    const big1=Math.max(r1a,r1b), big2=Math.max(r2a,r2b), small1=Math.min(r1a,r1b), small2=Math.min(r2a,r2b);
+    if(type===1){
+      const ans=rel(big1,big2);
+      return qout(`I. x² − ${s1}x + ${p1} = 0\nII. y² − ${s2}y + ${p2} = 0\nCompare the larger roots of x and y.`,ans,
+        "Compare the required roots; do not solve both with the formula.",
+        "Factor each equation and identify the larger root.",
+        "For x² − Sx + P = 0, look for two factors with sum S and product P.",
+        [`I: roots are ${r1a}, ${r1b} → larger root = ${big1}.`,`II: roots are ${r2a}, ${r2b} → larger root = ${big2}.`,`Therefore ${ans}.`],
+        ["Factor by inspection first.","Read the question carefully: larger root, not either root."]);
+    }
+    if(type===2){
+      const ans=rel(small1,small2);
+      return qout(`I. x² − ${s1}x + ${p1} = 0\nII. y² − ${s2}y + ${p2} = 0\nCompare the smaller roots of x and y.`,ans,
+        "Same equations, different target: compare the smaller roots.",
+        "Factor and take the smaller factor from each equation.",
+        "Once factored, you need only the requested root.",
+        [`I: roots ${r1a}, ${r1b} → smaller = ${small1}.`,`II: roots ${r2a}, ${r2b} → smaller = ${small2}.`,`Therefore ${ans}.`],
+        ["Do not automatically take the larger root.","Use the exact relation asked."]);
+    }
+    if(type===3){
+      const A1=P([2,3,4,5]),A2=P([2,3,4,5]);
+      const B1=-A1*s1,C1=A1*p1,B2=-A2*s2,C2=A2*p2;
+      const sum1=-B1/A1,sum2=-B2/A2,ans=rel(sum1,sum2);
+      return qout(`I. ${eq(A1,B1,C1,"x")}\nII. ${eq(A2,B2,C2,"y")}\nCompare the sum of roots of x and y.`,ans,
+        "The coefficients already give the sum of roots.",
+        "Use α + β = −b/a instead of finding either root.",
+        "For ax² + bx + c = 0, sum of roots = −b/a.",
+        [`I: sum of x-roots = −(${B1})/${A1} = ${sum1}.`,`II: sum of y-roots = −(${B2})/${A2} = ${sum2}.`,`Therefore ${ans}.`],
+        ["Never factor if the required value is directly available from coefficients.","Watch the sign of b."]);
+    }
+    const A1=P([2,3,4,5]),A2=P([2,3,4,5]);
+    const B1=-A1*s1,C1=A1*p1,B2=-A2*s2,C2=A2*p2;
+    const prod1=C1/A1,prod2=C2/A2,ans=rel(prod1,prod2);
+    return qout(`I. ${eq(A1,B1,C1,"x")}\nII. ${eq(A2,B2,C2,"y")}\nCompare the product of roots of x and y.`,ans,
+      "The constant/coefficient ratio gives the product immediately.",
+      "Use αβ = c/a; no root calculation is required.",
+      "For ax² + bx + c = 0, product of roots = c/a.",
+      [`I: product = ${C1}/${A1} = ${prod1}.`,`II: product = ${C2}/${A2} = ${prod2}.`,`Therefore ${ans}.`],
+      ["Look at c/a before factoring.","Coefficient relationships can be faster than solving."]);
   }
-  return mcq(
-    `I. x² − 13x + 40 = 0
-II. y² − 15y + 56 = 0
-Compare x and y (larger roots).`,
-    "x = y",
-    "I gives roots 5 and 8; II gives roots 7 and 8. The larger roots are equal, so x = y.",
-    "Quadratic Equations",
-    ["x > y","x < y","x = y","x ≥ y","x ≤ y"]
-  );
+
+  // 5–7: relations derived from roots, not individual root-taking.
+  if(type===5){
+    const a=R(3,15),b=R(2,18),s=a+b,p=a*b;
+    const A=P([2,3,4]);
+    const B=-A*s,C=A*p;
+    const value=s*s-2*p;
+    return qout(`${eq(A,B,C,"x")}\nIf the roots are α and β, find α² + β².`,value,
+      "Use (α+β)² − 2αβ; do not find α and β separately.",
+      "Take sum and product from the coefficients, then apply the identity.",
+      "α²+β² = (α+β)² − 2αβ.",
+      [`α+β = −(${B})/${A} = ${s}.`,`αβ = ${C}/${A} = ${p}.`,`α²+β² = ${s}² − 2(${p}) = ${value}.`],
+      ["Coefficient → sum/product → identity.","Avoid solving roots when only a relation is asked."]);
+  }
+  if(type===6){
+    const a=R(2,14),b=R(2,16),s=a+b,p=a*b,A=P([2,3,5]);
+    const B=-A*s,C=A*p,value=s/p;
+    return qout(`${eq(A,B,C,"x")}\nIf the roots are α and β, find 1/α + 1/β.`,F(s,p),
+      "Reverse the roots using (α+β)/αβ.",
+      "Use sum/product of roots directly.",
+      "1/α + 1/β = (α+β)/αβ.",
+      [`α+β = ${s}.`,`αβ = ${p}.`,`1/α + 1/β = ${s}/${p} = ${F(s,p)}.`],
+      ["Use the coefficient relationships first.","Keep the answer as a fraction when appropriate."]);
+  }
+  if(type===7){
+    const r=R(3,18),other=R(2,16),A=P([2,3,4,5]);
+    const B=-A*(r+other),C=A*r*other;
+    const target=r*r+other*other;
+    return qout(`${eq(A,B,C,"x")}\nOne root is ${r}. Find the sum of the squares of the two roots.`,target,
+      "You can identify the second root from the sum, then use the square relation.",
+      "Find the other root from α+β, then calculate α²+β².",
+      "Use α+β = −b/a first; avoid the quadratic formula.",
+      [`α+β = ${r+other}, so the other root = ${other}.`,`α²+β² = ${r}² + ${other}² = ${target}.`],
+      ["A known root is a shortcut.","Use coefficient relations before formula."]);
+  }
+
+  // 8–10: parameter / repeated-root / root-difference questions.
+  if(type===8){
+    const a=P([2,3,4,5]),b=R(6,18); // ax² + bx + k = 0 has equal roots
+    const k=(b*b)/(4*a);
+    return qout(`${a}x² − ${b}x + k = 0 has equal roots. Find k.`,F(b*b,4*a),
+      "Equal roots means discriminant = 0.",
+      "Set b² − 4ac = 0 and solve for k.",
+      "For ax²+bx+c=0 with equal roots: c = b²/(4a).",
+      [`b² − 4a k = 0`,`k = ${b}²/(4×${a}) = ${F(b*b,4*a)}.`],
+      ["Repeated/equal roots → D = 0.","Do not solve the quadratic itself."]);
+  }
+  if(type===9){
+    const r=R(4,14),d=R(2,7),s=2*r+d,p=r*(r+d),A=P([2,3,4]);
+    const B=-A*s,C=A*p;
+    return qout(`${eq(A,B,C,"x")}\nThe difference between the roots is ${d}. Find the larger root.`,r+d,
+      "Difference + sum lets you recover the roots quickly.",
+      "Let larger = smaller + d; combine with the root sum.",
+      "Larger root = (sum + difference)/2.",
+      [`Sum of roots = −(${B})/${A} = ${s}.`,`Larger root = (${s} + ${d})/2 = ${r+d}.`],
+      ["When root difference is given, use half-sum/half-difference."]);
+  }
+  if(type===10){
+    const r=R(3,14),d=R(2,6),s=2*r+d,p=r*(r+d),A=P([2,3,4]);
+    const B=-A*s,C=A*p;
+    return qout(`${eq(A,B,C,"x")}\nThe roots differ by ${d}. Find the smaller root.`,r,
+      "Use smaller root = (sum − difference)/2.",
+      "Get the root sum from coefficients, then subtract the difference.",
+      "Smaller root = (sum − difference)/2.",
+      [`Sum = −(${B})/${A} = ${s}.`,`Smaller root = (${s} − ${d})/2 = ${r}.`],
+      ["Do not factor unless needed."]);
+  }
+
+  // 11–13: equation from root conditions / transformed-root values.
+  if(type===11){
+    const a=R(2,12),b=R(3,14),A=P([2,3,4]);
+    const s=a+b,p=a*b,B=-A*s,C=A*p;
+    const value=(a-b)*(a-b);
+    return qout(`${eq(A,B,C,"x")}\nIf roots are α and β, find (α − β)².`,value,
+      "Use (α−β)² = (α+β)² − 4αβ.",
+      "Read sum and product from coefficients, then apply the identity.",
+      "(α−β)² = (α+β)² − 4αβ.",
+      [`α+β = ${s}.`,`αβ = ${p}.`,`(α−β)² = ${s}² − 4(${p}) = ${value}.`],
+      ["This avoids finding either root."]);
+  }
+  if(type===12){
+    const a=R(2,12),b=R(3,16),s=a+b,p=a*b,A=P([2,3,5]);
+    const B=-A*s,C=A*p;
+    const value=s*s/p;
+    return qout(`${eq(A,B,C,"x")}\nIf roots are α and β, find (α+β)²/(αβ).`,F(s*s,p),
+      "The expression is simply (sum of roots)² ÷ product.",
+      "Read sum and product directly from coefficients.",
+      "Use α+β = −b/a and αβ = c/a.",
+      [`α+β = ${s}.`,`αβ = ${p}.`,`(${s})²/${p} = ${F(s*s,p)}.`],
+      ["Simplify the expression before calculating."]);
+  }
+  if(type===13){
+    const r1=R(2,12),r2=R(3,15),A=P([2,3,4]);
+    const s=r1+r2,p=r1*r2,B=-A*s,C=A*p;
+    const value=s-p;
+    return qout(`${eq(A,B,C,"x")}\nIf the roots are α and β, find (α+β) − αβ.`,value,
+      "Both required quantities come directly from the coefficients.",
+      "Find sum = −b/a and product = c/a, then subtract.",
+      "Do not find the roots individually.",
+      [`α+β = ${s}.`,`αβ = ${p}.`,`(${s}) − (${p}) = ${value}.`],
+      ["Coefficient relationships are the fastest route."]);
+  }
+
+  // 14–16: genuine two-equation relationships using different root properties.
+  const a1=R(2,12),b1=R(3,15),a2=R(2,12),b2=R(3,15);
+  const A1=P([2,3,4]),A2=P([2,3,4]);
+  const s1=a1+b1,p1=a1*b1,s2=a2+b2,p2=a2*b2;
+  const B1=-A1*s1,C1=A1*p1,B2=-A2*s2,C2=A2*p2;
+  if(type===14){
+    const v1=s1*s1-2*p1,v2=s2*s2-2*p2,ans=rel(v1,v2);
+    return qout(`I. ${eq(A1,B1,C1,"x")}\nII. ${eq(A2,B2,C2,"y")}\nCompare (sum of squares of roots) for x and y.`,ans,
+      "Convert each quadratic into α²+β² using sum and product.",
+      "For each equation, calculate S²−2P, then compare.",
+      "α²+β² = (α+β)²−2αβ.",
+      [`I: S=${s1}, P=${p1} → S²−2P = ${v1}.`,`II: S=${s2}, P=${p2} → S²−2P = ${v2}.`,`Therefore ${ans}.`],
+      ["Compare the requested relation, not the individual roots."]);
+  }
+  if(type===15){
+    const v1=(s1*s1)/p1,v2=(s2*s2)/p2,ans=rel(v1,v2);
+    return qout(`I. ${eq(A1,B1,C1,"x")}\nII. ${eq(A2,B2,C2,"y")}\nCompare (sum of roots)²/(product of roots) for x and y.`,ans,
+      "The requested expression needs only S and P.",
+      "Compute S²/P for each equation from coefficients.",
+      "S=−b/a and P=c/a.",
+      [`I: S²/P = ${F(s1*s1,p1)}.`,`II: S²/P = ${F(s2*s2,p2)}.`,`Therefore ${ans}.`],
+      ["Do not solve the equations."]);
+  }
+  const v1=Math.abs(a1-b1),v2=Math.abs(a2-b2),ans=rel(v1,v2);
+  return qout(`I. ${eq(A1,B1,C1,"x")}\nII. ${eq(A2,B2,C2,"y")}\nCompare the absolute difference between the roots of x and y.`,ans,
+    "The root difference can be obtained without explicitly solving both roots.",
+    "Use (α−β)² = S²−4P, then compare the positive differences.",
+    "Calculate the squared difference first; compare squares instead of taking roots.",
+    [`I: S²−4P = ${s1*s1-4*p1} → difference = ${v1}.`,`II: S²−4P = ${s2*s2-4*p2} → difference = ${v2}.`,`Therefore ${ans}.`],
+    ["Compare squared values when both are non-negative.","Avoid unnecessary root calculation."]);
+}
+
+function advancedQuadratic(){
+  const type=R(1,8);
+  const A=P([2,3,4,5,6]);
+  const r1=R(4,18), r2=R(2,14);
+  const S0=r1+r2, P0=r1*r2, B=-A*S0, C=A*P0;
+  const e=eq(A,B,C,"x");
+  const qout=(expr,ans,highlight,approach,shortcut,steps)=>{
+    const z=q(expr,ans,"","Quadratic Equations","Hard",null);
+    z.options=null; z.coach={highlight,approach,shortcut,steps,quickMethods:["Use coefficient relationships before the quadratic formula.","Simplify the target expression first."]};
+    return z;
+  };
+  if(type===1){
+    const v=S0*S0-2*P0;
+    return qout(`${e}\nIf α and β are the roots, find α² + β².`,v,
+      "The target is a root relation, so the coefficients are enough.",
+      "Find S=α+β and P=αβ, then use S²−2P.","α²+β²=(α+β)²−2αβ.",[`S = −b/a = ${S0}.`,`P = c/a = ${P0}.`,`α²+β² = ${S0}² − 2(${P0}) = ${v}.`]);
+  }
+  if(type===2){
+    const v=Math.abs(r1-r2);
+    return qout(`${e}\nIf the roots differ by d, find d.`,v,
+      "Root difference comes from the discriminant.",
+      "Use d²=S²−4P and take the positive difference.","d=√(S²−4P).",[`S=${S0}, P=${P0}.`,`d² = ${S0}² − 4(${P0}) = ${v*v}.`,`d = ${v}.`]);
+  }
+  if(type===3){
+    const v=P0/S0;
+    return qout(`${e}\nIf the roots are α and β, find αβ/(α+β).`,F(P0,S0),
+      "This is product divided by sum.","Read P and S directly from coefficients.","αβ/(α+β)=P/S.",[`P=${P0}.`,`S=${S0}.`,`P/S = ${P0}/${S0} = ${F(P0,S0)}.`]);
+  }
+  if(type===4){
+    const known=r1,other=r2;
+    return qout(`${e}\nIf one root is ${known}, find the other root.`,other,
+      "One root + the coefficient sum gives the other immediately.","Use α+β=S.","Other root = S − known root.",[`S = −b/a = ${S0}.`,`Other root = ${S0} − ${known} = ${other}.`]);
+  }
+  if(type===5){
+    const k=(B*B)/(4*A);
+    return qout(`${A}x² ${B>=0?"+":"−"} ${Math.abs(B)}x + k = 0 has equal roots. Find k.`,F(B*B,4*A),
+      "Equal roots means the discriminant is zero.","Set b²−4ac=0 and isolate k.","k=b²/(4a).",[`D = ${B}² − 4(${A})k = 0.`,`k = ${B*B}/(${4*A}) = ${F(B*B,4*A)}.`]);
+  }
+  if(type===6){
+    const v=(S0*S0)/P0;
+    return qout(`${e}\nIf the roots are α and β, find (α+β)²/(αβ).`,F(S0*S0,P0),
+      "Use S²/P directly.","Take S and P from the coefficients.","(α+β)²/(αβ)=S²/P.",[`S=${S0}, P=${P0}.`,`S²/P = ${S0}²/${P0} = ${F(S0*S0,P0)}.`]);
+  }
+  if(type===7){
+    const v=S0*P0;
+    return qout(`${e}\nIf the roots are α and β, find (α+β)(αβ).`,v,
+      "Multiply the two standard root relations.","Use S×P.","(α+β)(αβ)=SP.",[`S=${S0}.`,`P=${P0}.`,`SP = ${S0}×${P0} = ${v}.`]);
+  }
+  const v=S0*S0-4*P0;
+  return qout(`${e}\nFind the square of the difference between the roots.`,v,
+    "The square of the root difference is the discriminant divided by a².","Use (α−β)²=S²−4P.","For monic-style root relations, compare S² and 4P before taking any root.",[`S=${S0}, P=${P0}.`,`(α−β)² = ${S0}² − 4(${P0}) = ${v}.`]);
 }
 
 function moderateBlindfold() {
