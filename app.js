@@ -12,9 +12,12 @@ const levels=[
 {id:"number",name:"Number Games",desc:"Addition • Subtraction • Multiplication • Division"},
 {id:"mixed",name:"Mixed Set",desc:"Surprise mix of all Easy sections"}]},
 {id:2,name:"Moderate",desc:"Speed Maths",topics:[
-{id:"simplification",name:"Simplification",desc:"Clerk Prelims exam-style calculation"},
-{id:"approximation",name:"Approximation",desc:"Fast rounding and option-based calculation"},
-{id:"series",name:"Number Series",desc:"Missing & wrong number patterns"}]},
+ {id:"simplification",name:"Simplification",desc:"Clerk Prelims exam-style calculation"},
+ {id:"approximation",name:"Approximation",desc:"Fast rounding and option-based calculation"},
+ {id:"quadratic",name:"Quadratic Equations",desc:"Clerk Prelims exam-level equations"},
+ {id:"missingSeries",name:"Missing Number Series",desc:"Clerk Prelims missing-term patterns"},
+ {id:"wrongSeries",name:"Wrong Number Series",desc:"Clerk Prelims wrong-term patterns"},
+ {id:"blindfold",name:"Blind Fold",desc:"Surprise mix of all Moderate sections"}]},
 {id:3,name:"Hard",desc:"Calculation Foundation",topics:[
 {id:"hardquad",name:"Mains-Level Quadratic",desc:"Advanced quadratic practice"}]}
 ];
@@ -231,8 +234,11 @@ function make(topic,subtopic=null){
  if(topic==="mixed")return make(P(["tables","squares","cubes","percent","fractions","number"]));
  if(topic==="simplification")return moderateSimplification();
  if(topic==="approximation")return moderateApproximation();
- if(topic==="series")return moderateSeries();
- let a=R(4,25),b=R(4,25),x=Math.max(a,b);return q(`x² − ${a+b}x + ${a*b} = 0; larger root?`,x,`The roots are ${a} and ${b}.`,"Mains-Level Quadratic","Hard")
+ if(topic==="quadratic")return moderateQuadratic();
+ if(topic==="missingSeries")return moderateSeries(false);
+ if(topic==="wrongSeries")return moderateSeries(true);
+ if(topic==="blindfold")return moderateBlindfold();
+ return q("Choose a Moderate topic to begin.","","Moderate practice.");
 }
 
 function home(){stop();S.view="home";back.classList.add("hidden");subtitle.textContent="Speed Maths";screen.innerHTML=`<section class="hero home-hero"><span class="pill">PR CLERK 2026</span><h1>PR CLERK <span>2026</span></h1><p>Fast calculation training for Clerk-level exams.</p></section><div class="grid">${levels.map(l=>`<button class="card" onclick="level(${l.id})"><h2>${l.name}</h2><div class="topic">${l.desc}</div></button>`).join("")}</div>`}
@@ -241,7 +247,7 @@ function openSection(topic){if(topic==="tables")return tablePicker();if(topic===
 function tablePicker(){S.view="tablePicker";subtitle.textContent="Tables • Choose a table";screen.innerHTML=`<div class="hero"><span class="pill">TABLES</span><h1>Choose your table</h1><p>Choose exactly which table you want to practise. You can change it anytime.</p></div><div class="picker-grid tables-picker">${Array.from({length:25},(_,i)=>i+6).map(n=>`<button class="card picker-card" onclick="setup('tables',${n})"><span class="pill">TABLE ${n}</span><h3>Table ${n}</h3><div class="topic">${n} × 2 to ${n} × 20</div><span class="pill start">PRACTISE →</span></button>`).join("")}</div>`}
 function numberPicker(){S.view="numberPicker";subtitle.textContent="Number Games • Choose operation";screen.innerHTML=`<div class="hero"><span class="pill">NUMBER GAMES</span><h1>Choose an operation</h1><p>Choose what you want to practise now.</p></div><div class="grid picker-ops">${[["addition","Addition","Build speed with addition"],["subtraction","Subtraction","Build speed with subtraction"],["multiplication","Multiplication","Learn faster multiplication patterns"],["division","Division","Build fast division recall"]].map(([id,n,d])=>`<button class="card section-card" onclick="setup('number','${id}')"><div><h3>${n}</h3><div class="topic">${d}</div></div><span class="pill start">PRACTISE →</span></button>`).join("")}</div>`}
 
-function cfg(topic){if(topic==="mixed")return[20,480];if(topic==="number")return[20,360];return[10,240]}
+function cfg(topic){if(topic==="mixed")return[20,480];if(topic==="number")return[20,360];if(topic==="blindfold")return[20,480];return[10,240]}
 function setup(topic,subtopic=null){
  let [dn,ds]=cfg(topic);
  S.view="setup";S.topic=topic;S.subtopic=subtopic;
@@ -251,7 +257,8 @@ function setup(topic,subtopic=null){
 }
 function beginSetup(){let n=Math.max(1,Math.min(100,parseInt(document.querySelector('#qcount').value,10)||10));let min=Math.max(1,Math.min(180,parseInt(document.querySelector('#qtime').value,10)||1));start(S.topic,S.subtopic,n,min*60)}
 function moderateQuality(qq,topic){
- if(topic==="series") return true;
+ if(topic==="missingSeries"||topic==="wrongSeries") return true;
+ if(topic==="blindfold") return true;
  const e=qq.expr||"";
  const nums=(e.match(/\d+(?:\.\d+)?/g)||[]).length;
  const ops=(e.match(/[+−×÷%]/g)||[]).length;
@@ -1326,5 +1333,88 @@ function moderateApproximation() {
 
 function moderateSeries() {
   return moderateIntegrated(ModerateGenerator.generateNumberSeries(Math.random() < 0.5));
+}
+
+// ==================================================
+// PR CLERK 2026 - MODERATE TOPIC EXPANSION
+// ==================================================
+// Based on PYQ/shift-trend analysis: Clerk Prelims has repeatedly used
+// Simplification/Approximation, Missing/Wrong Number Series and,
+// in many earlier cycles/shifts, Quadratic Equations. Recent shifts vary,
+// so this app trains each pattern independently rather than assuming a
+// fixed paper distribution.
+// ==================================================
+
+function moderateQuadratic() {
+  for (let attempt=0; attempt<120; attempt++) {
+    // Factorable, positive-root equations. The candidate compares the
+    // larger roots, matching a common Clerk Prelims quadratic-comparison style.
+    const r1a=R(3,18), r1b=R(2,22);
+    const r2a=R(3,18), r2b=R(2,22);
+    if(r1a===r1b || r2a===r2b) continue;
+
+    const s1=r1a+r1b, p1=r1a*r1b;
+    const s2=r2a+r2b, p2=r2a*r2b;
+    const x=Math.max(r1a,r1b), y=Math.max(r2a,r2b);
+
+    let ans;
+    if(x>y) ans="x > y";
+    else if(x<y) ans="x < y";
+    else ans="x = y";
+
+    const options=["x > y","x < y","x = y","x ≥ y","x ≤ y"];
+    const expr=`I. x² − ${s1}x + ${p1} = 0
+II. y² − ${s2}y + ${p2} = 0
+Compare x and y (take the larger root of each equation).`;
+
+    const exp=`I factors as (${r1a}, ${r1b}); larger root = ${x}. II factors as (${r2a}, ${r2b}); larger root = ${y}. Therefore ${ans}.`;
+    const z=mcq(expr,ans,exp,"Quadratic Equations",options.filter(o=>o!==ans));
+    z.options=options.sort(()=>Math.random()-.5);
+    z.coach={
+      highlight:"Factor first; compare the larger roots without using the quadratic formula.",
+      approach:"Look for two factors whose product is the constant term and whose sum is the middle coefficient. Then compare the larger roots.",
+      shortcut:"For x²−Sx+P=0, factorisation gives the roots directly. The exam is testing recognition, not the quadratic formula.",
+      steps:[
+        `Equation I: factors give roots ${r1a} and ${r1b}; larger root = ${x}.`,
+        `Equation II: factors give roots ${r2a} and ${r2b}; larger root = ${y}.`,
+        `Comparison: ${ans}.`
+      ],
+      quickMethods:[
+        "Try factorisation before formula.",
+        "For monic equations, product = constant and sum = coefficient magnitude.",
+        "Compare only the larger roots because that is what the question asks."
+      ]
+    };
+    return z;
+  }
+  return mcq(
+    `I. x² − 13x + 40 = 0
+II. y² − 15y + 56 = 0
+Compare x and y (larger roots).`,
+    "x = y",
+    "I gives roots 5 and 8; II gives roots 7 and 8. The larger roots are equal, so x = y.",
+    "Quadratic Equations",
+    ["x > y","x < y","x = y","x ≥ y","x ≤ y"]
+  );
+}
+
+function moderateBlindfold() {
+  const type=R(1,5);
+  if(type===1) return moderateSimplification();
+  if(type===2) return moderateApproximation();
+  if(type===3) return moderateQuadratic();
+  if(type===4) return moderateSeries(false);
+  return moderateSeries(true);
+}
+
+// Ensure the independent series topics remain separate even though the
+// underlying generator is shared.
+function moderateSeries(isWrong=false) {
+  const r=ModerateGenerator.generateNumberSeries(isWrong);
+  const z=moderateIntegrated(r);
+  z.type=isWrong ? "Wrong Number Series" : "Missing Number Series";
+  z.skill=z.type;
+  z.coach=z.coach||{};
+  return z;
 }
 
