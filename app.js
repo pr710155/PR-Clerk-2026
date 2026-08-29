@@ -81,9 +81,9 @@ function percent(){
  return q(`${a[0]}/${a[1]} = ? %`,a[2],`${a[0]}/${a[1]} = ${a[2]}%.`,"Fraction → Percentage");
 }
 function fraction(){
- let d=R(4,20),a=R(1,d-1),b=R(1,d-1);
- if(Math.random()<.5){let x=G(a,d);return q(`${a}/${d}  ?  ${b}/${d}`,a>b?">":a<b?"<":"=",`Same denominator: compare ${a} and ${b}.`,"Fractions")}
- let n=a*b,den=d*d,ans=F(n,den);return q(`${a}/${d} × ${b}/${d} = ?`,ans,`Multiply and simplify: ${ans}.`,"Fractions")
+ const choices=[[1,2,"50"],[1,4,"25"],[3,4,"75"],[1,5,"20"],[2,5,"40"],[3,5,"60"],[4,5,"80"],[1,8,"12.5"],[3,8,"37.5"],[5,8,"62.5"],[7,8,"87.5"],[1,10,"10"],[3,10,"30"],[7,10,"70"],[9,10,"90"],[1,16,"6.25"],[3,20,"15"],[7,20,"35"],[9,20,"45"],[17,20,"85"],[1,3,"33.33"],[2,3,"66.67"],[5,6,"83.33"]];
+ const a=P(choices);
+ return q(`${a[0]}/${a[1]} = ? %`,a[2],`Convert the fraction to a percentage: ${a[0]}/${a[1]} × 100 = ${a[2]}%.`,`Fraction → Percentage`);
 }
 function easyNumberQ(expr,ans,exp,skill,pattern,approach,shortcut,methods){
  let z=q(expr,ans,exp,skill,"Easy");
@@ -105,7 +105,7 @@ function add(){
  else if(type===5){a=R(100,999);b=R(100,999);x=a+b;pattern="Pair place values and exploit a round-number carry.";approach="Combine hundreds, then tens and units; use compensation when one number is near a round hundred.";shortcut="Turn 298 into 300−2, or 497 into 500−3, then correct.";methods=["Near-100/500 compensation.","Hundreds + tens + units.","Pair numbers that create 1000."]}
  else if(type===6){a=R(100,999);b=R(1000,9999);x=a+b;pattern="Use the nearest thousand/hundred as a base.";approach="Round the larger number to a friendly base, add, then compensate.";shortcut=`If ${b} is near a thousand, use ${Math.round(b/1000)*1000} and correct the difference.`;methods=["Base-1000 compensation.","Add hundreds/tens/units in chunks.","Keep the correction separate."]}
  else if(type===7){a=R(1000,9999);b=R(1000,9999);x=a+b;pattern="Use base-1000/10000 compensation for four-digit addition.";approach="Move the number nearest a round thousand or ten-thousand to the base, then correct.";shortcut="Example: +3998 = +4000−2; +5997 = +6000−3.";methods=["Round to 1000/10000.","Compensation.","Pair thousands before lower places."]}
- else if(type===8){a=R(20,999);b=pick([9,19,29,39,49,99,199,999]);x=a+b;pattern="Numbers ending in 9 are built for compensation.";approach="Add the next round number and subtract 1 (or the required correction).";shortcut=`+${b}: add ${b+1} then subtract 1.`;methods=["+9 = +10−1.","+19 = +20−1.","+99 = +100−1.","+999 = +1000−1."]}
+ else if(type===8){a=R(20,999);b=P([9,19,29,39,49,99,199,999]);x=a+b;pattern="Numbers ending in 9 are built for compensation.";approach="Add the next round number and subtract 1 (or the required correction).";shortcut=`+${b}: add ${b+1} then subtract 1.`;methods=["+9 = +10−1.","+19 = +20−1.","+99 = +100−1.","+999 = +1000−1."]}
  else if(type===9){a=R(50,900);b=R(50,900);x=a+b;pattern="Look for complementary parts that make 1000 or another round base.";approach="Rearrange mentally into convenient pairs before adding.";shortcut="Example: 460+540=1000; 280+720=1000.";methods=["Complement-to-100/1000.","Pair hundreds first.","Rearrange before calculating."]}
  else{a=R(10,99);b=R(10,99);let c=R(10,99);x=a+b+c;pattern="Three-number addition rewards pairing first.";approach="Pair the two numbers that create the easiest round total, then add the third.";shortcut="Find a pair making 10, 50, 100 or 200 before adding the remaining number.";methods=["Pair to 100.","Pair to 50.","Left-to-right only after the easiest pair is formed."]}
  return easyNumberQ(type===10?`${a} + ${b} + ${c} = ?`:`${a} + ${b} = ?`,x,`Add using the recommended mental pattern. The answer is ${x}.`,`Addition`,pattern,approach,shortcut,methods);
