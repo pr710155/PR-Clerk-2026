@@ -95,7 +95,7 @@ header .muted{font-size:14px;font-weight:650;letter-spacing:.02em}
 @media(max-width:560px){.result-hero{padding:18px}.result-hero h1{font-size:34px}.score-ring{width:70px;height:70px;min-width:70px;border-width:6px}.result-stats{gap:7px}.result-stat{padding:11px 9px}.result-stat strong{font-size:18px}.pace-card{grid-template-columns:1fr}.pace-percent{white-space:normal}.answer-line{gap:6px}.review-expr{font-size:19px}}
 
 /* Moderate/Hard multiple-choice options */
-.options{max-width:620px;margin:20px auto 18px;display:grid;gap:11px;text-align:left}.option{width:100%;min-height:58px;border:1px solid #dce2ee;border-radius:16px;background:#fff;display:grid;grid-template-columns:22px 1fr;align-items:center;gap:10px;padding:12px 15px;color:#202a3d;cursor:pointer;box-shadow:0 4px 12px rgba(40,55,95,.05);font-size:16px;text-align:left}.option:hover{border-color:#7183dc}.option.selected{border:2px solid #5268d9;background:#f1f4ff}.option .radio{width:18px;height:18px;border:2px solid #8b96ab;border-radius:50%;display:block;position:relative}.option.selected .radio{border-color:#5268d9}.option.selected .radio:after{content:"";position:absolute;width:8px;height:8px;border-radius:50%;background:#5268d9;left:3px;top:3px}.option>b{font-weight:750;white-space:pre-line}.question .expr{white-space:pre-line}
+.options{max-width:620px;margin:20px auto 18px;display:grid;gap:11px;text-align:left}.option{width:100%;min-height:58px;border:1px solid #dce2ee;border-radius:16px;background:#fff;display:grid;grid-template-columns:22px 28px 1fr;align-items:center;gap:10px;padding:12px 15px;color:#202a3d;cursor:pointer;box-shadow:0 4px 12px rgba(40,55,95,.05);font-size:16px;text-align:left}.option:hover{border-color:#7183dc}.option.selected{border:2px solid #5268d9;background:#f1f4ff}.option .radio{width:18px;height:18px;border:2px solid #8b96ab;border-radius:50%;display:block;position:relative}.option.selected .radio{border-color:#5268d9}.option.selected .radio:after{content:"";position:absolute;width:8px;height:8px;border-radius:50%;background:#5268d9;left:3px;top:3px}.option>b{font-weight:750;white-space:pre-line}.question .expr{white-space:pre-line}
 @media(max-width:560px){.option{min-height:54px;padding:11px 13px}.options{gap:9px}.option{font-size:15px}}
 
 /* V8 AI coaching + detailed solutions */
@@ -121,7 +121,7 @@ header .muted{font-size:14px;font-weight:650;letter-spacing:.02em}
 @media(max-width:650px){.insight-kpis{grid-template-columns:repeat(2,1fr)}.insight-grid,.test-insight-grid{grid-template-columns:1fr}.test-pie .pie-wrap{justify-content:center}.topic-row{grid-template-columns:125px 1fr 38px}.insight-callouts{grid-template-columns:1fr 1fr 1fr}.insights-hero{padding:18px}.insights-hero h1{font-size:28px}.streak-badge{min-width:74px;height:74px}.pie{width:105px;height:105px}.pie:after{inset:24px}}
 @media(max-width:450px){.insight-kpis strong{font-size:19px}.insight-kpis span{font-size:9px}.insight-card,.test-insights{padding:15px}.daily-bars{gap:3px}.daily-bar-col small{font-size:7px}.insight-callouts{grid-template-columns:1fr}.topic-row{grid-template-columns:105px 1fr 35px}.pie-wrap{gap:10px}.pie{width:96px;height:96px}.pie:after{inset:22px}}
 
-/* V24 — simple typing/keypad answer field; no custom stylus feature */
+/* V21 — native answer field for touch, stylus and Apple Pencil Scribble */
 .answer-input-wrap{max-width:420px;margin:18px auto 12px}
 .answer-input-label{display:block;text-align:left;margin:0 0 7px 3px;font-size:11px;font-weight:850;color:#68738a;text-transform:uppercase;letter-spacing:.05em}
 .answer-input{width:100%;min-height:66px;border:2px solid #ccd4e5;border-radius:15px;background:#fbfcff;color:var(--ink);font-size:28px;font-weight:800;text-align:right;padding:13px 16px;box-sizing:border-box;outline:none;caret-color:#5268d9;touch-action:manipulation;-webkit-user-select:text;user-select:text}
@@ -162,3 +162,10 @@ header .muted{font-size:14px;font-weight:650;letter-spacing:.02em}
 /* Never show MCQ letter markers if an old cached/generated option set exists. */
 .options,.option{display:none!important}
 @media(max-width:500px){.answer-input{min-height:68px;font-size:26px}.symbol-pad{gap:6px}.symbol-pad button{min-height:42px}.solution-panel{padding:12px!important}}
+/* Quadratic root-comparison choices: no A/B/C/D/E labels. */
+.mcq-options{max-width:620px;margin:20px auto 18px;display:grid!important;gap:11px;text-align:left}
+.mcq-option{width:100%;min-height:58px;border:1px solid #dce2ee;border-radius:16px;background:#fff;display:flex!important;align-items:center;padding:14px 18px;color:#202a3d;cursor:pointer;box-shadow:0 4px 12px rgba(40,55,95,.05);font-size:17px;font-weight:700;text-align:left;transition:.15s ease}
+.mcq-option:hover{border-color:#7183dc;transform:translateY(-1px)}
+.mcq-option.selected{border:2px solid #5268d9;background:#f1f4ff}
+.mcq-text{display:block}
+@media(max-width:560px){.mcq-option{min-height:54px;padding:13px 15px;font-size:16px}.mcq-options{gap:9px}}
